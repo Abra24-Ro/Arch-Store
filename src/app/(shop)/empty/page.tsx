@@ -1,5 +1,6 @@
+import { CartEmpty } from "@/src/components";
 
 export default function PageEmpty() {
-  return <div>PageEmpty</div>;
+  return <CartEmpty />;
 }
   

@@ -11,15 +11,16 @@ export const ProductGrid = ({ products }: Props) => {
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-        gap: "2px",
-        background: "var(--color-border)",
         marginTop: "32px",
       }}
     >
       {products.map((product) => (
         <div
           key={product.slug}
-          style={{ background: "var(--color-bg)" }}
+          style={{
+            borderRight: "0.5px solid var(--color-border)",
+            borderBottom: "0.5px solid var(--color-border)",
+          }}
         >
           <ProductGridItem product={product} />
         </div>

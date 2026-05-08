@@ -90,6 +90,16 @@
   --max-width: 1280px;
 
   --radius: var(--radius-md);
+
+  /* espaciado */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
 }
 
 /* ============================================================
@@ -141,7 +151,7 @@ body {
   font-size: var(--text-body);
   line-height: var(--leading-normal);
   color: var(--color-text-primary);
-  background-color: var(--color-bg);  
+  background-color: var(--color-bg);
   min-height: 100dvh;
   overflow-x: hidden;
 }
@@ -236,6 +246,18 @@ ol {
    LAYOUT
    ============================================================ */
 
+.section-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.section-block-lg {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
 /* * Clase contenedor — úsala en páginas que necesiten padding lateral */
 .page-container {
   width: 100%;
@@ -296,6 +318,17 @@ ol {
     border-color var(--duration-fast) var(--ease-base),
     transform var(--duration-instant) var(--ease-base);
   user-select: none;
+}
+
+.btn-primary-strong {
+  background: var(--color-obsidian);
+  color: var(--color-linen);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary-strong:hover {
+  background: var(--color-charcoal);
+  box-shadow: var(--shadow-md);
 }
 
 .btn:focus-visible {
@@ -401,7 +434,7 @@ ol {
 .input {
   width: 100%;
   background: var(--color-bg-surface);
-  border: 0.5px solid transparent;
+  border: 0.5px solid var(--color-border-medium);
   border-radius: var(--radius-md);
   padding: 11px 16px;
   font-family: var(--font-body);
@@ -462,7 +495,7 @@ ol {
 .select {
   width: 100%;
   background: var(--color-bg-surface);
-  border: 0.5px solid transparent;
+  border: 0.5px solid var(--color-border-medium);
   border-radius: var(--radius-md);
   padding: 11px 40px 11px 16px;
   font-family: var(--font-body);
@@ -918,6 +951,24 @@ ol {
 .logo-link:hover {
   opacity: 0.75;
   transform: translateY(-1px);
+}
+
+/* orders */
+
+.orders-row:hover {
+  background: var(--color-bg-surface);
+}
+/* footer */
+.footer-link:hover {
+  color: var(--color-text-primary);
+}
+
+.link-edit {
+  color: var(--color-text-primary);
+}
+
+.link-edit:hover {
+  color: var(--color-bg-surface);
 }
 
 @keyframes announceFade {
