@@ -9,6 +9,7 @@ import {
 import { initialData } from "@/src/seed/seed";
 import { notFound } from "next/navigation";
 import { Heart } from "lucide-react";
+import { CartProduct } from "@/src/types";
 
 interface Props {
   params: { slug: string };
@@ -16,7 +17,7 @@ interface Props {
 
 export default async function PageProduct({ params }: Props) {
   const { slug } = await params;
-  const product = initialData.products.find((p) => p.slug === slug);
+  const product = initialData.products.find((p) => p.slug === slug) as unknown as CartProduct;
 
   if (!product) notFound();
 

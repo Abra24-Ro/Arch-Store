@@ -1,17 +1,36 @@
+export  const revalidate = 60
 // page.tsx
-import { ProductGrid, Title } from "@/src/components";
-import { initialData } from "@/src/seed/seed";
+import { getPaginationProductWithImages } from "@/src/actions";
+import { Pagination, ProductGrid, Title } from "@/src/components";
 import { CATEGORY_META } from "@/src/types";
+import { redirect } from "next/navigation";
 
-const products = initialData.products;
+// page.tsx
+interface Props {
+  searchParams: Promise<{
+    page?: string;
+  }>;
+}
 
-export default function Home() {
+export default async function Home({ searchParams }: Props) {
   const meta = CATEGORY_META["all"];
+  const { page: pageParam } = await searchParams;  // ← await aquí
+  const page = pageParam ? Number(pageParam) : 1;
+  
+  const { products,totalPages } = await getPaginationProductWithImages({ page });
+
+
+
+
+  if(products.length === 0){
+    return redirect("/")
+  }
 
   return (
     <div className="page-container page-section">
       <Title title={meta.title} subtitle={meta.subtitle} />
       <ProductGrid products={products} />
+      <Pagination totalPages={totalPages} />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
 } from "@/src/components";
 
 import { initialData } from "@/src/seed/seed";
+import { CartProduct } from "@/src/types";
 
 interface Props {
   params: { id: string };
@@ -18,7 +19,7 @@ const productsInCart = [
   initialData.products[0],
   initialData.products[1],
   initialData.products[2],
-];
+] as unknown as CartProduct[];
 
 const address = {
   firstName:  "Santiago",

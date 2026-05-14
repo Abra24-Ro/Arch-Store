@@ -1,12 +1,13 @@
 "use client";
 
-import { Product } from "@/src/types";
+import { CartProduct } from "@/src/types";
+// import { Product } from "@/src/types";
 
 import { AnimatePresence } from "framer-motion";
 import { CartItem } from "../cart/CartItem";
 
 interface Props {
-  products: Product[];
+  products: CartProduct[];
 }
 
 export const OrderItemList = ({ products }: Props) => {

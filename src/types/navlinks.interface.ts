@@ -1,8 +1,8 @@
 export const NAV_LINKS = [
-  { href: "/category/all", label: "Todo" },
-  { href: "/category/women", label: "Mujeres" },
-  { href: "/category/men", label: "Hombres" },
-  { href: "/category/kid", label: "Niños" },
+  { href: "/gender/all", label: "Todo" },
+  { href: "/gender/women", label: "Mujeres" },
+  { href: "/gender/men", label: "Hombres" },
+  { href: "/gender/kid", label: "Niños" },
 ];
 
 export const ACCOUNT_LINKS = [

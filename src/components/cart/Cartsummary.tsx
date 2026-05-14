@@ -1,7 +1,8 @@
-import { Product } from "@/src/types";
+import { CartProduct } from "@/src/types";
+// import { Product } from "@/src/types";
 
 interface Props {
-  products: Product[];
+  products: CartProduct[];
 }
 
 const TAX_RATE = 0.18;

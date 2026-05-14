@@ -1,8 +1,9 @@
-import { CATEGORY_META, Product } from "@/src/types";
+import { CartProduct } from "@/src/types";
+import { CATEGORY_META } from "@/src/types";
 
 
 interface ProductHeaderProps {
-  product: Product;
+  product: CartProduct;
 }
 
 export const ProductHeader = ({ product }: ProductHeaderProps) => {
