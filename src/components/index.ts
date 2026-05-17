@@ -27,4 +27,5 @@ export * from "./orders/OrderItemList";
 export * from "./orders/OrderBadge";
 export * from "./shared/Footer/Footer";
 export * from "./shared/pagination/Pagination";
+export * from "./stock-label/StockLabel";
 

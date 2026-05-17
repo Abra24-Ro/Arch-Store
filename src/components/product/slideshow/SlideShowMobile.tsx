@@ -8,17 +8,22 @@ import "swiper/css/free-mode";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "./slideshow.css";
+import { StockLabel } from "../../stock-label/StockLabel";
 
 interface SlideShowProps {
   images: string[];
   title: string;
   className?: string;
+  inStock: number;
+  slug: string;
 }
 
 export const SlideShowMobile = ({
   images,
   title,
   className,
+  inStock,
+  slug,
 }: SlideShowProps) => {
   return (
     <div className={`flex flex-col h-full bg-[#EFEDE9] ${className ?? ""}`}>
@@ -56,6 +61,10 @@ export const SlideShowMobile = ({
           </SwiperSlide>
         ))}
       </Swiper>
+
+      {inStock <= 5 && inStock > 0 && <StockLabel slug={slug} />}
+
+      {inStock === 0 && <StockLabel slug={slug} />}
     </div>
   );
 };

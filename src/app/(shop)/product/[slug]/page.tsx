@@ -1,3 +1,5 @@
+export const revalite = 604800; //7dias
+
 import {
   ProductHeader,
   QuantitySelector,
@@ -6,18 +8,39 @@ import {
   SlideShowMobile,
   TrustBadges,
 } from "@/src/components";
-import { initialData } from "@/src/seed/seed";
+
 import { notFound } from "next/navigation";
 import { Heart } from "lucide-react";
-import { CartProduct } from "@/src/types";
+
+import { Metadata, ResolvingMetadata } from "next";
+import { getProductSlug } from "@/src/actions";
+
 
 interface Props {
   params: { slug: string };
 }
 
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const slug = (await params).slug;
+
+  // fetch post information
+  const product = await getProductSlug(slug)
+
+  return {
+    title: product?.title ?? "Producto de Arc Store",
+    description: product?.description ?? "",
+    openGraph: {
+      images: [`/products/${product?.images[1]}`],
+    },
+  };
+}
+
 export default async function PageProduct({ params }: Props) {
   const { slug } = await params;
-  const product = initialData.products.find((p) => p.slug === slug) as unknown as CartProduct;
+  const product = await getProductSlug(slug);
 
   if (!product) notFound();
 
@@ -25,13 +48,19 @@ export default async function PageProduct({ params }: Props) {
     <div className="grid grid-cols-1 md:grid-cols-2">
       {/* Galería desktop — sticky compensa nav + barra de anuncio */}
       <div className="hidden md:block md:sticky md:top-[65px] md:h-[calc(100vh-65px)]">
-        <SlideShow images={product.images} title={product.title} />
+        <SlideShow
+          images={product.images}
+          title={product.title}
+          inStock={product.inStock}
+        />
       </div>
 
       {/* Galería mobile */}
       <SlideShowMobile
         images={product.images}
         title={product.title}
+        inStock={product.inStock}
+        slug={product.slug}
         className="block md:hidden"
       />
 

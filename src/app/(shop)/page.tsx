@@ -22,9 +22,6 @@ export default async function Home({ searchParams }: Props) {
 
 
 
-  if(products.length === 0){
-    return redirect("/")
-  }
 
   return (
     <div className="page-container page-section">

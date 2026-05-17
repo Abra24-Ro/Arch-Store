@@ -15,9 +15,15 @@ interface SlideShowProps {
   images: string[];
   title: string;
   className?: string;
+  inStock: number;
 }
 
-export const SlideShow = ({ images, title, className }: SlideShowProps) => {
+export const SlideShow = ({
+  images,
+  title,
+  className,
+  inStock,
+}: SlideShowProps) => {
   const [thumbsSwiper, setThumbsSwiper] = useState<SwiperObject | null>(null);
 
   return (
@@ -53,6 +59,41 @@ export const SlideShow = ({ images, title, className }: SlideShowProps) => {
           </SwiperSlide>
         ))}
       </Swiper>
+
+      {/* Badge de stock */}
+      {inStock <= 5 && inStock > 0 && (
+        <div
+          style={{
+            padding: "8px 16px",
+            background: "var(--color-bg)",
+            borderTop: "0.5px solid var(--color-border)",
+            fontSize: "11px",
+            fontWeight: 500,
+            letterSpacing: "0.10em",
+            textTransform: "uppercase",
+            color: "var(--color-warning)",
+          }}
+        >
+          Solo quedan {inStock} unidades
+        </div>
+      )}
+
+      {inStock === 0 && (
+        <div
+          style={{
+            padding: "8px 16px",
+            background: "var(--color-bg)",
+            borderTop: "0.5px solid var(--color-border)",
+            fontSize: "11px",
+            fontWeight: 500,
+            letterSpacing: "0.10em",
+            textTransform: "uppercase",
+            color: "var(--color-error)",
+          }}
+        >
+          Sin stock
+        </div>
+      )}
 
       {/* thumbnails */}
       {images.length > 1 && (
