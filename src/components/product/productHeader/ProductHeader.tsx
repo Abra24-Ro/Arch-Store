@@ -1,6 +1,6 @@
 import { CartProduct } from "@/src/types";
 import { CATEGORY_META } from "@/src/types";
-
+import { formatCurrency } from "@/src/utils";
 
 interface ProductHeaderProps {
   product: CartProduct;
@@ -16,8 +16,12 @@ export const ProductHeader = ({ product }: ProductHeaderProps) => {
         {" · "}
         {product.tags?.[0] ?? "Ropa"}
       </p>
-      <h1 className="text-h2" style={{ marginTop: "6px" }}>{product.title}</h1>
-      <p className="text-price text-[22px]" style={{ marginTop: "4px" }}>${product.price}</p>
+      <h1 className="text-h2" style={{ marginTop: "6px" }}>
+        {product.title}
+      </h1>
+      <p className="text-price text-[22px]" style={{ marginTop: "4px" }}>
+        {formatCurrency(product.price)}
+      </p>
     </div>
   );
 };

@@ -1,13 +1,14 @@
 "use client";
 
 import { CartProduct } from "@/src/types";
-
-// import { Product } from "@/src/types";
 import { QuantitySelector } from "@/src/components";
+import { useCartStore } from "@/src/store";
 import Image from "next/image";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { useState } from "react";
 
 interface Props {
   product: CartProduct;
@@ -15,24 +16,37 @@ interface Props {
 }
 
 export const CartItem = ({ product, index = 0 }: Props) => {
+  const updateQuantity = useCartStore((state) => state.updateProductQuantity);
+  const removeFromCart = useCartStore((state) => state.removeProduct);
+  const [isRemoving, setIsRemoving] = useState(false);
+
+  const handleRemove = () => {
+    setIsRemoving(true);
+    setTimeout(() => {
+      removeFromCart(product);
+      toast.success(`${product.title} eliminado del carrito`);
+    }, 350);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{
-        duration: 0.25,
-        delay: index * 0.06,
-        ease: [0.25, 0, 0, 1],
+      animate={{
+        opacity: isRemoving ? 0 : 1,
+        x: isRemoving ? -16 : 0,
+        height: isRemoving ? 0 : "auto",
       }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.3, delay: isRemoving ? 0 : index * 0.06, ease: [0.25, 0, 0, 1] }}
       style={{
         display: "flex",
         gap: "16px",
         padding: "20px 0",
         borderBottom: "0.5px solid var(--color-border)",
+        overflow: "hidden",
       }}
     >
-      {/* Imagen — zoom sutil en hover */}
+      {/* Imagen */}
       <Link href={`/product/${product.slug}`} style={{ flexShrink: 0 }}>
         <motion.div
           whileHover={{ scale: 1.03 }}
@@ -46,8 +60,9 @@ export const CartItem = ({ product, index = 0 }: Props) => {
           }}
         >
           <Image
-            src={`/products/${product.images[0]}`}
+            src={`/products/${product.image}`}
             alt={product.title}
+            loading="eager"
             width={80}
             height={100}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
@@ -56,27 +71,7 @@ export const CartItem = ({ product, index = 0 }: Props) => {
       </Link>
 
       {/* Info */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          gap: "3px",
-        }}
-      >
-        <p
-          style={{
-            fontSize: "10px",
-            fontWeight: 500,
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
-            color: "var(--color-text-tertiary)",
-          }}
-        >
-          {product.gender}
-        </p>
-
-        {/* Título — subrayado animado en hover */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "3px" }}>
         <motion.div whileHover="hover" initial="rest">
           <Link
             href={`/product/${product.slug}`}
@@ -111,50 +106,65 @@ export const CartItem = ({ product, index = 0 }: Props) => {
         </motion.div>
 
         <p style={{ fontSize: "12px", color: "var(--color-text-tertiary)" }}>
-          Talla: {product.sizes[0]}
+          Talla: {product.sizes}
         </p>
 
-        <p
-          style={{
-            fontSize: "14px",
-            fontWeight: 500,
-            color: "var(--color-text-primary)",
-            marginTop: "auto",
-            paddingTop: "8px",
-          }}
-        >
-          ${product.price}
+        <p style={{
+          fontSize: "14px",
+          fontWeight: 500,
+          color: "var(--color-text-primary)",
+          marginTop: "auto",
+          paddingTop: "8px",
+        }}>
+          S/ {(product.price * product.quantity).toFixed(2)}
         </p>
       </div>
 
       {/* Acciones */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          justifyContent: "space-between",
-        }}
-      >
-        {/* Botón eliminar — hover en rojo */}
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-end",
+        justifyContent: "space-between",
+      }}>
+        {/* Botón eliminar con spinner */}
         <motion.button
           aria-label="Eliminar producto"
-          whileHover={{ color: "var(--color-error)", scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
+          onClick={handleRemove}
+          disabled={isRemoving}
+          whileHover={!isRemoving ? { color: "var(--color-error)", scale: 1.1 } : {}}
+          whileTap={!isRemoving ? { scale: 0.9 } : {}}
           transition={{ duration: 0.15 }}
           style={{
             background: "none",
             border: "none",
-            cursor: "pointer",
+            cursor: isRemoving ? "not-allowed" : "pointer",
             color: "var(--color-text-tertiary)",
             padding: "4px",
             display: "flex",
           }}
         >
-          <Trash2 size={14} strokeWidth={1.5} />
+          {isRemoving ? (
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 0.6, repeat: Infinity, ease: "linear" }}
+              style={{
+                width: 14,
+                height: 14,
+                border: "1.5px solid currentColor",
+                borderTopColor: "transparent",
+                borderRadius: "50%",
+              }}
+            />
+          ) : (
+            <Trash2 size={14} strokeWidth={1.5} />
+          )}
         </motion.button>
 
-        <QuantitySelector quantity={1} />
+        <QuantitySelector
+          quantity={product.quantity}
+          onQuantityChange={(quantity) => updateQuantity(product, quantity)}
+        />
       </div>
     </motion.div>
   );

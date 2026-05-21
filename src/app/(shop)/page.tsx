@@ -3,7 +3,7 @@ export  const revalidate = 60
 import { getPaginationProductWithImages } from "@/src/actions";
 import { Pagination, ProductGrid, Title } from "@/src/components";
 import { CATEGORY_META } from "@/src/types";
-import { redirect } from "next/navigation";
+
 
 // page.tsx
 interface Props {

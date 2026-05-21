@@ -6,13 +6,17 @@ import clsx from "clsx";
 import { useState } from "react";
 
 interface Props {
-  selectedSize: Size;
+  selectedSize?: Size;
   availableSizes: Size[];
+
+  onSizeChanged: (size: Size) => void;
 }
 
-export const SizeSelector = ({ selectedSize, availableSizes }: Props) => {
-  const [selected, setSelected] = useState<Size>(selectedSize);
-
+export const SizeSelector = ({
+  availableSizes,
+  onSizeChanged,
+  selectedSize,
+}: Props) => {
   return (
     <div>
       <p className="text-label mb-3">Talla</p>
@@ -21,19 +25,19 @@ export const SizeSelector = ({ selectedSize, availableSizes }: Props) => {
         {availableSizes.map((size) => (
           <motion.button
             key={size}
-            onClick={() => setSelected(size)}
+            onClick={() => onSizeChanged(size)}
             whileTap={{ scale: 0.93 }}
             transition={{ duration: 0.1 }}
             className={clsx(
               "relative cursor-pointer flex items-center justify-center",
               "w-10 h-10 sm:w-11 sm:h-11 text-[11px] sm:text-[12px]",
               "rounded-md transition-colors duration-150 select-none",
-              selected === size
+              selectedSize === size
                 ? "border-[1.5px] border-[#1A1A1A] font-medium text-[#1A1A1A]"
                 : "border border-black/15 text-[#5A5856] hover:border-black/30 hover:text-[#1A1A1A]"
             )}
           >
-            {selected === size && (
+            {selectedSize === size && (
               <motion.span
                 layoutId="size-indicator"
                 className="absolute inset-0 rounded-md bg-white"

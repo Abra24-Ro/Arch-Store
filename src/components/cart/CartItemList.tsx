@@ -1,17 +1,30 @@
 "use client";
 
-import { CartProduct } from "@/src/types";
-
-// import { Product } from "@/src/types";
 import { CartItem } from "./CartItem";
 import { AnimatePresence } from "framer-motion";
-import { BackLink } from "..";
+import { BackLink, CartItemListSkeleton } from "..";
+import { useCartStore } from "@/src/store";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-interface Props {
-  products: CartProduct[];
-}
+export const CartItemList = () => {
+  const productsInCart = useCartStore((state) => state.cart);
+  const [isMounted, setIsMounted] = useState(false);
+  const router = useRouter();
 
-export const CartItemList = ({ products }: Props) => {
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsMounted(true);
+  }, []);
+  
+  useEffect(() => {
+    if (isMounted && productsInCart.length === 0) {
+      router.replace("/empty");
+    }
+  }, [isMounted, productsInCart.length,router]); // router fuera
+
+  if (!isMounted) return <CartItemListSkeleton />;
+
   return (
     <div
       className="page-container"
@@ -43,13 +56,17 @@ export const CartItemList = ({ products }: Props) => {
           marginBottom: "32px",
         }}
       >
-        {products.length} {products.length === 1 ? "producto" : "productos"}
+        {productsInCart.length}{" "}
+        {productsInCart.length === 1 ? "producto" : "productos"}
       </p>
 
-      {/* AnimatePresence permite animar la salida cuando se elimina un item */}
       <AnimatePresence initial={false}>
-        {products.map((product, i) => (
-          <CartItem key={product.slug} product={product} index={i} />
+        {productsInCart.map((product, i) => (
+          <CartItem
+            key={`${product.slug}-${product.sizes}`}
+            product={product}
+            index={i}
+          />
         ))}
       </AnimatePresence>
     </div>

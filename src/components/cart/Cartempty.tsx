@@ -38,7 +38,7 @@ export const CartEmpty = () => {
       </div>
 
       <Link
-        href="/category/all"
+        href="/"
         className="btn btn-primary"
         style={{ marginTop: "8px", cursor: "pointer" }}
       >

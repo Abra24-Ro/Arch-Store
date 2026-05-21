@@ -2,19 +2,16 @@ export const revalite = 604800; //7dias
 
 import {
   ProductHeader,
-  QuantitySelector,
-  SizeSelector,
   SlideShow,
   SlideShowMobile,
   TrustBadges,
 } from "@/src/components";
 
 import { notFound } from "next/navigation";
-import { Heart } from "lucide-react";
 
 import { Metadata, ResolvingMetadata } from "next";
 import { getProductSlug } from "@/src/actions";
-
+import { AddToCart } from "./ui/AddToCart";
 
 interface Props {
   params: { slug: string };
@@ -27,7 +24,7 @@ export async function generateMetadata(
   const slug = (await params).slug;
 
   // fetch post information
-  const product = await getProductSlug(slug)
+  const product = await getProductSlug(slug);
 
   return {
     title: product?.title ?? "Producto de Arc Store",
@@ -72,28 +69,9 @@ export default async function PageProduct({ params }: Props) {
         >
           <ProductHeader product={product} />
 
-          <div style={{ height: "0.5px", background: "var(--color-border)" }} />
-
-          <SizeSelector
-            selectedSize={product.sizes[0]}
-            availableSizes={product.sizes}
-          />
-
-          <QuantitySelector quantity={1} />
-
-          <div style={{ height: "0.5px", background: "var(--color-border)" }} />
-
-          <div className="flex flex-col gap-2">
-            <button className="btn btn-primary w-full">
-              Agregar al carrito
-            </button>
-            <button className="btn btn-secondary w-full flex items-center justify-center gap-2">
-              <Heart size={14} strokeWidth={1.5} />
-              Guardar en lista
-            </button>
-          </div>
-
           <TrustBadges />
+
+          <AddToCart product={product} />
 
           <div className="flex flex-col gap-3">
             <p className="text-label">Descripción</p>

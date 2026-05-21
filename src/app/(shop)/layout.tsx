@@ -1,4 +1,5 @@
 import { Footer, Sidebar, TopMenu } from "@/src/components";
+import { Toaster } from "sonner";
 
 export default function ShopLayout({
   children,
@@ -12,8 +13,23 @@ export default function ShopLayout({
     >
       <TopMenu />
       <Sidebar />
+
       <main className="flex flex-col flex-1">{children}</main>
       <Footer />
+
+      <Toaster
+        position="top-right"
+        richColors
+        toastOptions={{
+          style: {
+            fontFamily: "var(--font-body)",
+            fontSize: "13px",
+            borderRadius: "var(--radius-md)",
+            border: "0.5px solid var(--color-border-medium)",
+            boxShadow: "var(--shadow-md)",
+          },
+        }}
+      />
     </div>
   );
 }
