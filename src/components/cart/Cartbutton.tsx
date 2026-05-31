@@ -9,17 +9,31 @@ import { useEffect, useState } from "react";
 export const CartButton = () => {
   const totalItemsInCart = useCartStore((state) => state.getTotalItems());
   const [isMounted, setIsMounted] = useState(false);
+  const [bump, setBump] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (!isMounted || totalItemsInCart === 0) return;
+    setBump(true);
+    const t = setTimeout(() => setBump(false), 400);
+    return () => clearTimeout(t);
+  }, [totalItemsInCart]);
+
   return (
-    <Link href={
-      ( (totalItemsInCart === 0) &&  isMounted) ? "/empty" : "/cart"
-    } aria-label="Carrito" className="nav-icon-btn relative">
-      <ShoppingBagIcon size={17} strokeWidth={1.5} />
+    <Link
+      href={isMounted && totalItemsInCart === 0 ? "/empty" : "/cart"}
+      aria-label="Carrito"
+      className="nav-icon-btn relative"
+    >
+      <motion.div
+        animate={bump ? { scale: [1, 1.25, 0.9, 1.05, 1] } : {}}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+      >
+        <ShoppingBagIcon size={17} strokeWidth={1.5} />
+      </motion.div>
 
       <AnimatePresence>
         {isMounted && totalItemsInCart > 0 && (
@@ -31,7 +45,6 @@ export const CartButton = () => {
             exit={{ scale: 0, opacity: 0 }}
             transition={{ type: "spring", stiffness: 500, damping: 20 }}
           >
-            {/* Pulse ring — llamada a la acción */}
             <motion.span
               className="absolute inset-0 rounded-full"
               style={{ background: "var(--color-obsidian)" }}

@@ -8,21 +8,30 @@ interface SidebarItem {
 interface Props {
   title: string;
   items: SidebarItem[];
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "admin";
+  icons?: Record<string, React.ReactNode>;
 }
 
-export const SidebarSection = ({ title, items, variant = "primary" }: Props) => {
+// SidebarSection — título limpio, sin ícono
+export const SidebarSection = ({
+  title,
+  items,
+  variant = "primary",
+  icons,
+}: Props) => {
   return (
     <div style={{ padding: "20px 24px 8px" }}>
-      <p style={{
-        fontSize: "10px",
-        fontWeight: 500,
-        letterSpacing: "0.16em",
-        textTransform: "uppercase",
-        color: "var(--color-text-tertiary)",
-        marginBottom: "8px",
-      }}>
-        {title}  
+      <p
+        style={{
+          fontSize: "10px",
+          fontWeight: 500,
+          letterSpacing: "0.16em",
+          textTransform: "uppercase",
+          color: "var(--color-text-tertiary)",
+          marginBottom: "8px",
+        }}
+      >
+        {title}
       </p>
 
       {items.map(({ href, label }, i) => (
@@ -32,6 +41,7 @@ export const SidebarSection = ({ title, items, variant = "primary" }: Props) => 
           label={label}
           index={i}
           variant={variant}
+          icon={icons?.[href]} // ← ícono por item, no por sección
         />
       ))}
     </div>

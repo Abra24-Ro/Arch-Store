@@ -1,33 +1,66 @@
 "use client";
 
-import { SearchIcon, XIcon } from "lucide-react";
+import {
+  SearchIcon,
+  XIcon,
+  ShoppingBag,
+  Heart,
+  User,
+  Package,
+  ClipboardList,
+  Users,
+  Layers,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUIStore } from "@/src/store";
-import { NAV_LINKS, ACCOUNT_LINKS } from "@/src/types";
+import { NAV_LINKS, ACCOUNT_LINKS, ADMIN_LINKS } from "@/src/types";
 import { SidebarSection } from "./Sidebarsection";
+import { LogoutButton } from "../../ui/LogoutButton";
 
+const ICONS: Record<string, React.ReactNode> = {
+  "/gender/all": <Layers size={14} strokeWidth={1.5} />,
+  "/gender/women": <ShoppingBag size={14} strokeWidth={1.5} />,
+  "/gender/men": <ShoppingBag size={14} strokeWidth={1.5} />,
+  "/gender/kid": <ShoppingBag size={14} strokeWidth={1.5} />,
+  "/profile": <User size={14} strokeWidth={1.5} />,
+  "/orders": <ClipboardList size={14} strokeWidth={1.5} />,
+  "/favorites": <Heart size={14} strokeWidth={1.5} />,
+  "/admin/products": <Package size={14} strokeWidth={1.5} />,
+  "/admin/orders": <ClipboardList size={14} strokeWidth={1.5} />,
+  "/admin/users": <Users size={14} strokeWidth={1.5} />,
+};
 
-export const Sidebar = () => {
-  const isOpen  = useUIStore((state) => state.isSideMenuOpen);
+interface Props {
+  isLoggedIn: boolean;
+  userEmail?: string | null;
+  isAdmin: boolean;
+}
+
+export const Sidebar = ({ isLoggedIn, userEmail, isAdmin }: Props) => {
+  const isOpen = useUIStore((state) => state.isSideMenuOpen);
   const onClose = useUIStore((state) => state.closeSideMenu);
+
+  const accountLinks = isLoggedIn
+    ? ACCOUNT_LINKS
+    : ACCOUNT_LINKS.filter((l) => l.href !== "/profile");
 
   return (
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0" style={{ zIndex: 300 }}>
-
-          {/* Overlay */}
           <motion.div
             className="absolute inset-0"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.25 }}
-            style={{ background: "rgba(26,26,26,0.35)", backdropFilter: "blur(2px)" }}
+            style={{
+              background: "rgba(26,26,26,0.35)",
+              backdropFilter: "blur(2px)",
+            }}
             onClick={onClose}
           />
 
-          {/* Panel */}
           <motion.nav
             className="absolute right-0 top-0 bottom-0 flex flex-col"
             initial={{ x: "100%" }}
@@ -41,23 +74,27 @@ export const Sidebar = () => {
             }}
           >
             {/* Header */}
-            <div style={{
-              padding: "24px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              borderBottom: "0.5px solid var(--color-border)",
-            }}>
-              <span style={{
-                fontFamily: "var(--font-display)",
-                fontSize: "14px",
-                fontWeight: 600,
-                letterSpacing: "-0.01em",
-                color: "var(--color-text-primary)",
-              }}>
+            <div
+              style={{
+                padding: "24px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                borderBottom: "0.5px solid var(--color-border)",
+                flexShrink: 0,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "14px",
+                  fontWeight: 600,
+                  letterSpacing: "-0.01em",
+                  color: "var(--color-text-primary)",
+                }}
+              >
                 arc
               </span>
-
               <button
                 onClick={onClose}
                 aria-label="Cerrar menú"
@@ -79,25 +116,79 @@ export const Sidebar = () => {
             </div>
 
             {/* Search */}
-            <div style={{ padding: "16px 24px", borderBottom: "0.5px solid var(--color-border)" }}>
-              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+            <div
+              style={{
+                padding: "16px 24px",
+                borderBottom: "0.5px solid var(--color-border)",
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
                 <SearchIcon
                   size={14}
                   strokeWidth={1.5}
-                  style={{ position: "absolute", left: "12px", color: "var(--color-text-tertiary)" }}
+                  style={{
+                    position: "absolute",
+                    left: "12px",
+                    color: "var(--color-text-tertiary)",
+                  }}
                 />
                 <input
                   type="text"
                   placeholder="Buscar producto..."
                   className="input"
-                  style={{ paddingLeft: "36px", background: "var(--color-bg-surface)" }}
+                  style={{
+                    paddingLeft: "36px",
+                    background: "var(--color-bg-surface)",
+                  }}
                 />
               </div>
             </div>
 
-            <SidebarSection title="Categorías" items={NAV_LINKS} variant="primary" />
-            <SidebarSection title="Cuenta" items={ACCOUNT_LINKS} variant="secondary" />
+            {/* Contenido — scrolleable */}
+            <div style={{ flex: 1, overflowY: "auto" }}>
+              <SidebarSection
+                title="Categorías"
+                items={NAV_LINKS}
+                variant="primary"
+                icons={ICONS}
+              />
+              <SidebarSection
+                title="Cuenta"
+                items={accountLinks}
+                variant="secondary"
+                icons={ICONS}
+              />
+              {isAdmin && (
+                <SidebarSection
+                  title="Admin"
+                  items={ADMIN_LINKS}
+                  variant="admin"
+                  icons={ICONS}
+                />
+              )}
+            </div>
 
+            {/* Footer — siempre visible */}
+            <div
+              style={{
+                padding: "16px 24px",
+                borderTop: "0.5px solid var(--color-border)",
+                flexShrink: 0,
+              }}
+            >
+              <LogoutButton
+                isLoggedIn={isLoggedIn}
+                userEmail={userEmail}
+                onAfterLogout={onClose}
+              />
+            </div>
           </motion.nav>
         </div>
       )}

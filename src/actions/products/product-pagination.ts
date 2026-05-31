@@ -18,6 +18,8 @@ export const getPaginationProductWithImages = async ({
   const safeTake = Math.max(1, isNaN(take) ? 12 : take);
 
   try {
+    const whereClause = gender ? { gender } : {};
+
     const [products, totalCount] = await Promise.all([
       prisma.product.findMany({
         take: safeTake,
@@ -28,17 +30,12 @@ export const getPaginationProductWithImages = async ({
             select: { url: true },
           },
         },
-        where: {
-          gender: gender,
-        },
+        where: whereClause,
       }),
       prisma.product.count({
-        where: {
-          gender: gender,
-        },
+        where: whereClause,
       }),
     ]);
-
     const totalPages = Math.ceil(totalCount / safeTake);
 
     return {

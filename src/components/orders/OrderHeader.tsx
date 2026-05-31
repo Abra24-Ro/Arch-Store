@@ -1,11 +1,20 @@
 import { OrderBadge } from "./OrderBadge";
 
 interface Props {
-  id:     string;
-  isPaid: boolean;
+  id:        string;
+  isPaid:    boolean;
+  createdAt: Date;  // ← añadir
 }
 
-export const OrderHeader = ({ id, isPaid }: Props) => {
+export const OrderHeader = ({ id, isPaid, createdAt }: Props) => {
+  const formattedDate = new Intl.DateTimeFormat("es-PE", {
+    day:   "numeric",
+    month: "long",
+    year:  "numeric",
+    hour:  "2-digit",
+    minute:"2-digit",
+  }).format(createdAt);
+
   return (
     <div style={{ marginBottom: "24px" }}>
       <p style={{
@@ -25,10 +34,19 @@ export const OrderHeader = ({ id, isPaid }: Props) => {
         fontWeight: 500,
         letterSpacing: "-0.02em",
         color: "var(--color-text-primary)",
-        marginBottom: "16px",
+        marginBottom: "4px", // ← reducir para dar espacio a la fecha
       }}>
         #{id}
       </h1>
+
+      {/* Fecha del pedido */}
+      <p style={{
+        fontSize: "12px",
+        color: "var(--color-text-tertiary)",
+        marginBottom: "16px",
+      }}>
+        {formattedDate}
+      </p>
 
       <OrderBadge isPaid={isPaid} />
     </div>

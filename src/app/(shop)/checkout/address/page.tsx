@@ -1,7 +1,20 @@
 import { BackLink } from "@/src/components";
-import Link from "next/link";
+import { AddressForm } from "./ui/AddressForm";
+import { getCountries } from "@/src/actions/country/get-countries";
+import { getSession } from "@/src/lib/get-session";
+import { redirect } from "next/navigation";
+import { getUserAddress } from "@/src/actions";
 
-export default function AddressPage() {
+export default async function AddressPage() {
+  const [countries, { isLoggedIn, user }] = await Promise.all([
+    getCountries(),
+    getSession(),
+  ]);
+
+  if (!isLoggedIn) redirect("/auth/login");
+
+  const userAddress = await getUserAddress(user!.id);
+
   return (
     <div
       className="page-container"
@@ -30,115 +43,11 @@ export default function AddressPage() {
         </div>
 
         {/* Formulario */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          {/* Nombres y Apellidos */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "16px",
-            }}
-          >
-            <div className="input-group">
-              <label htmlFor="firstName" className="input-label">
-                Nombres
-              </label>
-              <input id="firstName" type="text" className="input" />
-            </div>
-            <div className="input-group">
-              <label htmlFor="lastName" className="input-label">
-                Apellidos
-              </label>
-              <input id="lastName" type="text" className="input" />
-            </div>
-          </div>
-
-          {/* Dirección */}
-          <div className="input-group">
-            <label htmlFor="address" className="input-label">
-              Dirección
-            </label>
-            <input id="address" type="text" className="input" />
-          </div>
-
-          {/* Dirección 2 */}
-          <div className="input-group">
-            <label htmlFor="address2" className="input-label">
-              Dirección 2{" "}
-              <span
-                style={{
-                  color: "var(--color-text-tertiary)",
-                  fontWeight: 400,
-                  textTransform: "none",
-                  letterSpacing: 0,
-                }}
-              >
-                (opcional)
-              </span>
-            </label>
-            <input id="address2" type="text" className="input" />
-          </div>
-
-          {/* CP y Ciudad */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "16px",
-            }}
-          >
-            <div className="input-group">
-              <label htmlFor="postalCode" className="input-label">
-                Código postal
-              </label>
-              <input id="postalCode" type="text" className="input" />
-            </div>
-            <div className="input-group">
-              <label htmlFor="city" className="input-label">
-                Ciudad
-              </label>
-              <input id="city" type="text" className="input" />
-            </div>
-          </div>
-
-          {/* País */}
-          <div className="input-group">
-            <label htmlFor="country" className="input-label">
-              País
-            </label>
-            <select id="country" className="select">
-              <option value="">Selecciona un país</option>
-              <option value="PE">Perú</option>
-              <option value="MX">México</option>
-              <option value="CO">Colombia</option>
-              <option value="AR">Argentina</option>
-              <option value="CL">Chile</option>
-              <option value="US">Estados Unidos</option>
-            </select>
-          </div>
-
-          {/* Teléfono */}
-          <div className="input-group">
-            <label htmlFor="phone" className="input-label">
-              Teléfono
-            </label>
-            <input
-              id="phone"
-              type="tel"
-              className="input"
-              placeholder="+51 999 999 999"
-            />
-          </div>
-
-          <div style={{ height: "0.5px", background: "var(--color-border)" }} />
-
-          {/* CTA */}
-          <Link href="/checkout">
-            <button className="btn btn-primary w-full">
-              Continuar al resumen
-            </button>
-          </Link>
-        </div>
+        <AddressForm
+          countries={countries}
+          userId={user!.id}
+          userStoredAddress={userAddress ?? undefined}
+        />
       </div>
     </div>
   );

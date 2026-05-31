@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   creator: "Arc Store",
   // ! Definir NEXT_PUBLIC_SITE_URL en producción
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   ),
   openGraph: {
     type: "website",
@@ -70,14 +70,11 @@ export default function RootLayout({
       className={`${fontVariables} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body
-        className="min-h-full flex flex-col"
-      >
+      <body className="min-h-full flex flex-col">
         {children}
 
-        <Toaster
-          position="top-right"
-          richColors
+        {/* <Toaster
+          position="top-center"
           toastOptions={{
             style: {
               fontFamily: "var(--font-body)",
@@ -85,9 +82,11 @@ export default function RootLayout({
               borderRadius: "var(--radius-md)",
               border: "0.5px solid var(--color-border-medium)",
               boxShadow: "var(--shadow-md)",
+              background: "var(--color-bg-elevated)",
+              color: "var(--color-text-primary)",
             },
           }}
-        />
+        /> */}
       </body>
     </html>
   );

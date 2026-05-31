@@ -1,3 +1,4 @@
+import { getOrderById } from "@/src/actions";
 import {
   BackLink,
   CartSummary,
@@ -8,39 +9,23 @@ import {
   SummaryPanel,
 } from "@/src/components";
 
-import { initialData } from "@/src/seed/seed";
-import { CartProduct } from "@/src/types";
+import { mapOrderAddress, mapOrderItemsToCartProducts } from "@/src/utils";
+import { redirect } from "next/navigation";
 
 interface Props {
   params: { id: string };
 }
 
-const productsInCart = [
-  initialData.products[0],
-  initialData.products[1],
-  initialData.products[2],
-] as unknown as CartProduct[];
-
-const address = {
-  firstName:  "Santiago",
-  lastName:   "Rodriguez",
-  phone:      "123456789",
-  address:    "123 Main St",
-  city:       "San Francisco",
-  state:      "California",
-  postalCode: "94105",
-  country:    "Estados Unidos",
-};
-
-// * Cambiar a false para ver estado pendiente
-const isPaid = true;
-
 export default async function PageOrderID({ params }: Props) {
   const { id } = await params;
+  const { status, order } = await getOrderById(id);
+
+  if (!order || status !== "success") redirect("/orders");
+
+  const products = mapOrderItemsToCartProducts(order.orderItems); // ← mapeo limpio
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] min-h-screen">
-
       <div
         className="page-container"
         style={{
@@ -50,16 +35,29 @@ export default async function PageOrderID({ params }: Props) {
         }}
       >
         <BackLink href="/orders" label="Mis pedidos" />
-        <OrderHeader id={id} isPaid={isPaid} />
-        <OrderItemList products={productsInCart} />
+        <OrderHeader
+          id={id}
+          isPaid={order.isPaid}
+          createdAt={order.createdAt}
+        />
+        <OrderItemList products={products} />
       </div>
 
       <SummaryPanel>
-        <ShippingInfo address={address} />
-        <CartSummary products={productsInCart} />
-        <OrderBadge isPaid={isPaid} />
+        <ShippingInfo
+          addressData={mapOrderAddress(order.orderAddress)}
+          readOnly
+        />
+        <CartSummary
+          data={{
+            subtotal: order.subTotal,
+            tax: order.tax,
+            total: order.total,
+            itemsInCart: order.itemsInOrder,
+          }}
+        />
+        <OrderBadge isPaid={order.isPaid} />
       </SummaryPanel>
-
     </div>
   );
 }

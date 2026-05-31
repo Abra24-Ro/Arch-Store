@@ -2,28 +2,33 @@
 
 import { useCartStore } from "@/src/store";
 import { formatCurrency } from "@/src/utils";
-import { useEffect, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { CartSummarySkeleton } from "./skeletons/CartSummarySkeleton";
+import { useHydration } from "@/src/hooks/useHydration";
 
-export const CartSummary = () => {
-  const { subtotal, tax, total, itemsInCart } = useCartStore(
-    useShallow((state) => state.getSummaryInformation())
-  );
+interface SummaryData {
+  subtotal:     number;
+  tax:          number;
+  total:        number;
+  itemsInCart:  number;
+}
 
-  const [isMounted, setIsMounted] = useState(false);
+interface Props {
+  data?: SummaryData; // ← opcional — si no se pasa, lee del store
+}
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsMounted(true);
-  }, []);
+export const CartSummary = ({ data }: Props) => {
+  const hydrated   = useHydration();
+  const storeData  = useCartStore(useShallow((state) => state.getSummaryInformation()));
 
-  if (!isMounted) return <CartSummarySkeleton />;
+  if (!hydrated && !data) return <CartSummarySkeleton />;
+
+  const { subtotal, tax, total, itemsInCart } = data ?? storeData;
 
   const rows = [
     { label: `Productos (${itemsInCart})`, value: formatCurrency(subtotal) },
-    { label: "Envío", value: "Gratis", accent: true },
-    { label: "Impuestos (18%)", value: formatCurrency(tax) },
+    { label: "Envío",                      value: "Gratis",                accent: true },
+    { label: "Impuestos (18%)",            value: formatCurrency(tax) },
   ];
 
   return (

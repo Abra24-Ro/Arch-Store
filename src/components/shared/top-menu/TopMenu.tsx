@@ -8,10 +8,12 @@ import { NAV_LINKS } from "@/src/types";
 
 import { CartButton } from "../..";
 import { AlignJustify, SearchIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 export const TopMenu = () => {
+  const pathname = usePathname();
   const openMenu = useUIStore((state) => state.openSideMenu);
-
+  
 
   return (
     <header className="sticky top-0 left-0 right-0 z-50">
@@ -29,7 +31,10 @@ export const TopMenu = () => {
         <ul className="hidden md:flex items-center gap-8">
           {NAV_LINKS.map(({ href, label }) => (
             <li key={href}>
-              <Link href={href} className="nav-link">
+              <Link
+                href={href}
+                className={`nav-link ${pathname === href ? "nav-link--active" : ""}`}
+              >
                 {label}
               </Link>
             </li>

@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "src/app/(shop)/checkout/(checkout)/ui/CheckoutProductList.tsx"  ],
   "exclude": ["node_modules"]
 }

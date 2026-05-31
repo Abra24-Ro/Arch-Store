@@ -1,16 +1,12 @@
 "use client";
 
-import { getStockBySlug } from "@/src/actions";
+import { getStockBySlug } from "@/src/actions/products/get-stock-by-slug";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 
 interface Props {
   slug: string;
 }
-
-
-
-
 
 export const StockLabel = ({ slug }: Props) => {
   const [stock, setStock] = useState(0);
@@ -26,7 +22,9 @@ export const StockLabel = ({ slug }: Props) => {
       }
     };
     fetchStock();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [slug]);
 
   if (isLoading) {

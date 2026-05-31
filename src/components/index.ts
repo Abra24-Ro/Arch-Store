@@ -1,5 +1,3 @@
-
-
 export * from "./shared/LogoArc";
 export * from "./shared/top-menu/TopMenu";
 export * from "./shared/not-found/PageNotFound";
@@ -22,15 +20,13 @@ export * from "./cart/CartItem";
 export * from "./cart/Cartsummary";
 export * from "./cart/Cartbutton";
 export * from "./cart/Summarypanel";
-export * from "./cart/Shippinginfo";
+export * from "./checkout/Shippinginfo";
 
 //*skeleton
 
 export * from "./cart/skeletons/SkeletonBox";
 export * from "./cart/skeletons/CartItemListSkeleton";
 export * from "./cart/skeletons/CartSummarySkeleton";
-
-
 
 export * from "./shared/links/BackLink";
 export * from "./orders/OrderHeader";
@@ -40,10 +36,11 @@ export * from "./shared/Footer/Footer";
 export * from "./shared/pagination/Pagination";
 export * from "./stock-label/StockLabel";
 
+export * from "./provider/Provider";
 
+//*Checkout
 
+export * from "./checkout/CheckoutItem";
 
-
-
-
+export * from "./checkout/skeletons/CheckoutItemSkeleton";
 

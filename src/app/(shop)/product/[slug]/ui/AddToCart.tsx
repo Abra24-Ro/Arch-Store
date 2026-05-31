@@ -4,6 +4,7 @@ import { SizeSelector, QuantitySelector } from "@/src/components";
 import { useCartStore } from "@/src/store";
 import { CartProduct, Product, Size } from "@/src/types";
 import { Heart } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -12,9 +13,10 @@ interface Props {
 }
 
 export const AddToCart = ({ product }: Props) => {
+  const router = useRouter();
   const addProductToCart = useCartStore((state) => state.addProductToCart);
 
-  const [size, setSize]         = useState<Size | undefined>();
+  const [size, setSize] = useState<Size | undefined>();
   const [quantity, setQuantity] = useState<number>(1);
 
   const addToCart = () => {
@@ -24,13 +26,13 @@ export const AddToCart = ({ product }: Props) => {
     }
 
     const cartProduct: CartProduct = {
-      id:       product.id,
-      slug:     product.slug,
-      title:    product.title,
-      price:    product.price,
+      id: product.id,
+      slug: product.slug,
+      title: product.title,
+      price: product.price,
       quantity,
-      sizes:    size,
-      image:    product.images[0],
+      sizes: size,
+      image: product.images[0],
     };
 
     addProductToCart(cartProduct);
@@ -41,6 +43,10 @@ export const AddToCart = ({ product }: Props) => {
 
     toast.success(`${product.title} agregado`, {
       description: `Talla ${size} · Cantidad ${quantity}`,
+      action: {
+        label: "Ver carrito",
+        onClick: () => router.push("/cart"),
+      },
     });
   };
 

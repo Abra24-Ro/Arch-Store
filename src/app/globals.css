@@ -761,6 +761,17 @@ ol {
   border-width: 0;
 }
 
+/* skeleton  checkout item*/
+
+.skeleton {
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -876,6 +887,18 @@ ol {
   right: 0;
 }
 
+
+/* En globals.css, justo después de .nav-link:hover::after */
+.nav-link--active {
+  color: var(--color-text-primary);
+  border-bottom: 0.5px solid var(--color-accent);
+  padding-bottom: 3px;
+}
+/* Desactiva el ::after cuando está activo para no duplicar */
+.nav-link--active::after {
+  display: none;
+}
+
 .nav-icon-btn {
   position: relative;
   display: flex;
@@ -958,18 +981,37 @@ ol {
 .orders-row:hover {
   background: var(--color-bg-surface);
 }
-/* footer */
+
+.footer-link {
+  color: var(--color-text-tertiary);
+  transition: color 150ms ease;
+}
+
 .footer-link:hover {
   color: var(--color-text-primary);
 }
 
-.link-edit {
+.link-subtle {
+  color: var(--color-text-tertiary);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.link-subtle:hover {
   color: var(--color-text-primary);
 }
 
-.link-edit:hover {
-  color: var(--color-bg-surface);
+.link-edit {
+  color: var(--color-text-tertiary);
+  transition: color 150ms ease;
 }
+
+.link-edit:hover {
+  color: var(--color-text-primary);
+}
+
 
 @keyframes announceFade {
   from {

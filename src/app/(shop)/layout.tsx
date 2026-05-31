@@ -1,24 +1,27 @@
 import { Footer, Sidebar, TopMenu } from "@/src/components";
+import { getSession } from "@/src/lib/get-session";
 import { Toaster } from "sonner";
 
-export default function ShopLayout({
+export default async function ShopLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { isLoggedIn, user, isAdmin } = await getSession(); 
+
   return (
     <div
       className="flex flex-col min-h-screen"
       style={{ backgroundColor: "var(--color-bg-surface)" }}
     >
       <TopMenu />
-      <Sidebar />
+      <Sidebar isLoggedIn={isLoggedIn} userEmail={user?.email} isAdmin={isAdmin} /> 
 
       <main className="flex flex-col flex-1">{children}</main>
       <Footer />
 
       <Toaster
-        position="top-right"
+        position="top-center"
         richColors
         toastOptions={{
           style: {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArcLogomark } from "@/src/components/shared/LogoArc";
+import { RegisterForm } from "./ui/RegisterForm";
 
 export default function PageNewAccount() {
   return (
@@ -56,107 +57,7 @@ export default function PageNewAccount() {
         </div>
 
         {/* Formulario */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          {/* Nombre y Apellido */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "12px",
-            }}
-          >
-            <div className="input-group">
-              <label htmlFor="firstName" className="input-label">
-                Nombre
-              </label>
-              <input id="firstName" type="text" className="input" />
-            </div>
-            <div className="input-group">
-              <label htmlFor="lastName" className="input-label">
-                Apellido
-              </label>
-              <input id="lastName" type="text" className="input" />
-            </div>
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="email" className="input-label">
-              Correo electrónico
-            </label>
-            <input
-              id="email"
-              type="email"
-              className="input"
-              placeholder="tu@email.com"
-            />
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="password" className="input-label">
-              Contraseña
-            </label>
-            <input
-              id="password"
-              type="password"
-              className="input"
-              placeholder="••••••••"
-            />
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="confirmPassword" className="input-label">
-              Confirmar contraseña
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              className="input"
-              placeholder="••••••••"
-            />
-          </div>
-
-          <button
-            className="btn btn-primary w-full"
-            style={{ marginTop: "8px" }}
-          >
-            Crear cuenta
-          </button>
-
-          {/* Divisor */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div
-              style={{
-                flex: 1,
-                height: "0.5px",
-                background: "var(--color-border)",
-              }}
-            />
-            <span
-              style={{
-                fontSize: "11px",
-                color: "var(--color-text-tertiary)",
-                letterSpacing: "0.08em",
-              }}
-            >
-              O
-            </span>
-            <div
-              style={{
-                flex: 1,
-                height: "0.5px",
-                background: "var(--color-border)",
-              }}
-            />
-          </div>
-
-          <Link
-            href="/auth/login"
-            className="btn btn-secondary w-full"
-            style={{ textAlign: "center" }}
-          >
-            Ya tengo una cuenta
-          </Link>
-        </div>
+         <RegisterForm />
       </div>
     </main>
   );

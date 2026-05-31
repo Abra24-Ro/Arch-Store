@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArcLogomark } from "@/src/components/shared/LogoArc";
+import { LoginForm } from "./ui/LoginForm";
 
 export default function PageLogin() {
   return (
@@ -56,73 +57,8 @@ export default function PageLogin() {
         </div>
 
         {/* Formulario */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div className="input-group">
-            <label htmlFor="email" className="input-label">
-              Correo electrónico
-            </label>
-            <input
-              id="email"
-              type="email"
-              className="input"
-              placeholder="tu@email.com"
-            />
-          </div>
+         <LoginForm />
 
-          <div className="input-group">
-            <label htmlFor="password" className="input-label">
-              Contraseña
-            </label>
-            <input
-              id="password"
-              type="password"
-              className="input"
-              placeholder="••••••••"
-            />
-          </div>
-
-          <button
-            className="btn btn-primary w-full"
-            style={{ marginTop: "8px" }}
-          >
-            Ingresar
-          </button>
-
-          {/* Divisor */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div
-              style={{
-                flex: 1,
-                height: "0.5px",
-                background: "var(--color-border)",
-              }}
-            />
-            <span
-              style={{
-                fontSize: "11px",
-                color: "var(--color-text-tertiary)",
-                letterSpacing: "0.08em",
-              }}
-            >
-              O
-            </span>
-            <div
-              style={{
-                flex: 1,
-                height: "0.5px",
-                background: "var(--color-border)",
-              }}
-            />
-          </div>
-
-          <Link
-            href="/auth/new-account"
-            className="btn btn-secondary w-full"
-            style={{ textAlign: "center" }}
-          >
-            Crear una nueva cuenta
-          </Link>
-        </div>
       </div>
     </section>
   );
