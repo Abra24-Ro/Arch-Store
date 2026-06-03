@@ -133,6 +133,8 @@ model Order {
   //*Relation with orderItems
   orderItems   OrderItem[]
   orderAddress OrderAddress?
+
+  transactionId String? @unique
 }
 
 model OrderItem {

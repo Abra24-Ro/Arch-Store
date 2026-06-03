@@ -23,3 +23,11 @@ export * from "./order/place-order";
 export * from "./order/get-order-by-id";
 //*order/get-orders-by-user
 export * from "./order/get-orders-by-user";
+//*order/admin/get-all-orders
+export * from "./order/admin/get-all-orders";
+//*users/get-paginater-user
+export * from "./users/get-paginater-user";
+//*users/change-user-role
+export * from "./users/change-user-role";
+//*products/getAllProducts
+export * from "./products/get-all-products";

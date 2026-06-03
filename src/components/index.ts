@@ -36,11 +36,16 @@ export * from "./shared/Footer/Footer";
 export * from "./shared/pagination/Pagination";
 export * from "./stock-label/StockLabel";
 
-export * from "./provider/Provider";
+
 
 //*Checkout
 
 export * from "./checkout/CheckoutItem";
 
 export * from "./checkout/skeletons/CheckoutItemSkeleton";
+export * from "./paypal/PaypalButton";
 
+
+//orders
+export * from "./orders/OrderList";
+export * from "./orders/OrderPagination"

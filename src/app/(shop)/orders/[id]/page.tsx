@@ -5,6 +5,7 @@ import {
   OrderBadge,
   OrderHeader,
   OrderItemList,
+  PaypalButton,
   ShippingInfo,
   SummaryPanel,
 } from "@/src/components";
@@ -39,6 +40,8 @@ export default async function PageOrderID({ params }: Props) {
           id={id}
           isPaid={order.isPaid}
           createdAt={order.createdAt}
+           paidAt={order.paidAt}
+
         />
         <OrderItemList products={products} />
       </div>
@@ -56,7 +59,44 @@ export default async function PageOrderID({ params }: Props) {
             itemsInCart: order.itemsInOrder,
           }}
         />
-        <OrderBadge isPaid={order.isPaid} />
+
+        {/* ← condicional según estado de pago */}
+        {order.isPaid ? (
+          <OrderBadge isPaid />
+        ) : (
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "12px" }}
+          >
+            {/* Separador */}
+            <div
+              style={{ height: "0.5px", background: "var(--color-border)" }}
+            />
+
+            <p
+              style={{
+                fontSize: "11px",
+                color: "var(--color-text-tertiary)",
+                textAlign: "center",
+                letterSpacing: "0.06em",
+              }}
+            >
+              Selecciona un método de pago
+            </p>
+
+            <PaypalButton orderId={order.id} amount={order.total} />
+
+            <p
+              style={{
+                fontSize: "11px",
+                color: "var(--color-text-tertiary)",
+                textAlign: "center",
+                letterSpacing: "0.06em",
+              }}
+            >
+              Pago seguro · SSL encriptado
+            </p>
+          </div>
+        )}
       </SummaryPanel>
     </div>
   );

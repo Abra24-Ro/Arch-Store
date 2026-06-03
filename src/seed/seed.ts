@@ -1,12 +1,12 @@
 import bcrypt from "bcryptjs";
-import { ValidSizes } from "../types/address.interface";
+import { Size } from "../types/product.interface";
 
 interface SeedProduct {
   description: string;
   images: string[];
   inStock: number;
   price: number;
-  sizes: ValidSizes[];
+  sizes: Size[];
   slug: string;
   tags: string[];
   title: string;

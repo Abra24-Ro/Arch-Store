@@ -1012,6 +1012,15 @@ ol {
   color: var(--color-text-primary);
 }
 
+/** paypal */
+
+paypal-button,
+paypal-basic-card-container,
+paypal-basic-card-button {
+  width: 100% !important;
+  display: block !important;
+}
+
 
 @keyframes announceFade {
   from {

@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 
-import { Toaster } from "@/src/components/ui/sonner";
 import { fontVariables } from "../styles/fonts";
 import "./globals.css";
+import { Providers } from "../providers";
 
 // * SEO y metadatos de la tienda
 export const metadata: Metadata = {
@@ -71,22 +71,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
-        {children}
-
-        {/* <Toaster
-          position="top-center"
-          toastOptions={{
-            style: {
-              fontFamily: "var(--font-body)",
-              fontSize: "13px",
-              borderRadius: "var(--radius-md)",
-              border: "0.5px solid var(--color-border-medium)",
-              boxShadow: "var(--shadow-md)",
-              background: "var(--color-bg-elevated)",
-              color: "var(--color-text-primary)",
-            },
-          }}
-        /> */}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -7,62 +7,67 @@ import { z } from "zod";
 import { prisma } from "./lib/prisma";
 import { authConfig } from "./auth.config";
 
-export const { auth, signIn, signOut, handlers } =
-  NextAuth({
-    ...authConfig,
+export const { auth, signIn, signOut, handlers } = NextAuth({
+  ...authConfig,
 
-    callbacks: {
-      ...authConfig.callbacks,
+  callbacks: {
+    ...authConfig.callbacks,
 
-      jwt({ token, user }) {
-        if (user) {
-          token.data = user;
-        }
-
-        return token;
-      },
-
-      session({ session, token }) {
-        session.user = token.data as any;
-
-        return session;
-      },
+    async jwt({ token, user }) {
+      if (user) {
+        token.data = user; // ← solo al hacer login
+      }
+      return token;
     },
 
-    providers: [
-      Credentials({
-        async authorize(credentials) {
-          const parsedCredentials = z
-            .object({
-              email: z.string().email(),
-              password: z.string().min(6),
-            })
-            .safeParse(credentials);
+    async session({ session, token }) {
+      if (!token.data) return session;
 
-          if (!parsedCredentials.success) return null;
+      // ← leer rol fresco de DB en cada request
+      const dbUser = await prisma.user.findUnique({
+        where: { id: (token.data as any).id },
+        select: { role: true },
+      });
 
-          const { email, password } =
-            parsedCredentials.data;
+      session.user = {
+        ...(token.data as any),
+        role: dbUser?.role ?? "user", // ← rol siempre actualizado
+      };
 
-          const user = await prisma.user.findUnique({
-            where: {
-              email: email.toLowerCase(),
-            },
-          });
+      return session;
+    },
+  },
 
-          if (!user) return null;
+  providers: [
+    Credentials({
+      async authorize(credentials) {
+        const parsedCredentials = z
+          .object({
+            email: z.string().email(),
+            password: z.string().min(6),
+          })
+          .safeParse(credentials);
 
-          const isMatching = await bcrypt.compare(
-            password,
-            user.password
-          );
+        if (!parsedCredentials.success) return null;
 
-          if (!isMatching) return null;
+        const { email, password } = parsedCredentials.data;
 
-          const { password: _, ...rest } = user;
+        const user = await prisma.user.findUnique({
+          where: {
+            email: email.toLowerCase(),
+          },
+        });
 
-          return rest;
-        },
-      }),
-    ],
-  });
+        if (!user) return null;
+
+        const isMatching = await bcrypt.compare(password, user.password);
+
+        if (!isMatching) return null;
+
+        const { password: _, ...rest } = user;
+
+        return rest;
+      },
+    }),
+  ],
+});
