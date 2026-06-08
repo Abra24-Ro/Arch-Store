@@ -1,4 +1,4 @@
-import { Gender, Size } from "@/src/generated/prisma/enums";
+import { Gender, Size } from "@/src/generated/prisma";
 import { z } from "zod";
 
 const VALID_SIZES = Object.values(Size); //* ["XS", "S", "M", "L", "XL", "XXL"]
