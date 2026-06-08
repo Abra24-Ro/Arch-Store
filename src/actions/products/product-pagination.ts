@@ -1,6 +1,6 @@
 "use server";
 
-import { Gender } from "@/src/generated/prisma/enums";
+import { Gender } from "@/src/generated/prisma";
 import { prisma } from "@/src/lib/prisma";
 
 interface PaginationsOptions {
