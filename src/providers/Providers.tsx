@@ -10,7 +10,6 @@ interface ProvidersProps {
 }
 
 export const Providers: React.FC<ProvidersProps> = ({ children }) => {
-  console.log("Client ID:", process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID);
   return (
     <PayPalProvider
       clientId={process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || ""}

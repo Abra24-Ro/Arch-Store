@@ -1,9 +1,8 @@
 "use client";
 
 import { CartProduct } from "@/src/types";
-import { QuantitySelector } from "@/src/components";
+import { ProductImage, QuantitySelector } from "@/src/components";
 import { useCartStore } from "@/src/store";
-import Image from "next/image";
 import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -37,7 +36,11 @@ export const CartItem = ({ product, index = 0 }: Props) => {
         height: isRemoving ? 0 : "auto",
       }}
       exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.3, delay: isRemoving ? 0 : index * 0.06, ease: [0.25, 0, 0, 1] }}
+      transition={{
+        duration: 0.3,
+        delay: isRemoving ? 0 : index * 0.06,
+        ease: [0.25, 0, 0, 1],
+      }}
       style={{
         display: "flex",
         gap: "16px",
@@ -59,19 +62,24 @@ export const CartItem = ({ product, index = 0 }: Props) => {
             background: "var(--color-bg-surface)",
           }}
         >
-          <Image
-            src={`/products/${product.image}`}
+          <ProductImage
+            src={product.image}
             alt={product.title}
-            loading="eager"
             width={80}
             height={100}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         </motion.div>
       </Link>
 
       {/* Info */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "3px" }}>
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          gap: "3px",
+        }}
+      >
         <motion.div whileHover="hover" initial="rest">
           <Link
             href={`/product/${product.slug}`}
@@ -109,30 +117,36 @@ export const CartItem = ({ product, index = 0 }: Props) => {
           Talla: {product.sizes}
         </p>
 
-        <p style={{
-          fontSize: "14px",
-          fontWeight: 500,
-          color: "var(--color-text-primary)",
-          marginTop: "auto",
-          paddingTop: "8px",
-        }}>
+        <p
+          style={{
+            fontSize: "14px",
+            fontWeight: 500,
+            color: "var(--color-text-primary)",
+            marginTop: "auto",
+            paddingTop: "8px",
+          }}
+        >
           S/ {(product.price * product.quantity).toFixed(2)}
         </p>
       </div>
 
       {/* Acciones */}
-      <div style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-end",
-        justifyContent: "space-between",
-      }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+        }}
+      >
         {/* Botón eliminar con spinner */}
         <motion.button
           aria-label="Eliminar producto"
           onClick={handleRemove}
           disabled={isRemoving}
-          whileHover={!isRemoving ? { color: "var(--color-error)", scale: 1.1 } : {}}
+          whileHover={
+            !isRemoving ? { color: "var(--color-error)", scale: 1.1 } : {}
+          }
           whileTap={!isRemoving ? { scale: 0.9 } : {}}
           transition={{ duration: 0.15 }}
           style={{

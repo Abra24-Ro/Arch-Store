@@ -1,3 +1,4 @@
+import { FilterType } from "./product.interface";
 
 export const NAV_LINKS = [
   { href: "/gender/all", label: "Todo" },
@@ -14,8 +15,8 @@ export const ACCOUNT_LINKS = [
 
 export const ADMIN_LINKS = [
   { href: "/admin/products", label: "Productos" },
-  { href: "/admin/orders",   label: "Órdenes"   },
-  { href: "/admin/users",    label: "Usuarios"   },
+  { href: "/admin/orders", label: "Órdenes" },
+  { href: "/admin/users", label: "Usuarios" },
 ];
 
 export const CATEGORY_META: Record<
@@ -28,4 +29,10 @@ export const CATEGORY_META: Record<
   all: { title: "Todo", subtitle: "Toda nuestra colección" },
 };
 
-
+export const GENDER_FILTERS: { label: string; value: FilterType }[] = [
+  { label: "Todos", value: "all" },
+  { label: "Hombres", value: "men" },
+  { label: "Mujeres", value: "women" },
+  { label: "Niños", value: "kid" },
+  { label: "Unisex", value: "unisex" },
+];

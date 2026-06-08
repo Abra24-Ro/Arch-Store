@@ -10,6 +10,7 @@ import "swiper/css/free-mode";
 import "swiper/css/navigation";
 import "swiper/css/thumbs";
 import "./slideshow.css";
+import { ProductImage } from "../..";
 
 interface SlideShowProps {
   images: string[];
@@ -42,19 +43,21 @@ export const SlideShow = ({
           delay: 2500,
           disableOnInteraction: true,
         }}
-        thumbs={{ swiper: thumbsSwiper }}
+        thumbs={{
+          swiper: thumbsSwiper && !thumbsSwiper.destroyed ? thumbsSwiper : null,
+        }}
         modules={[FreeMode, Navigation, Thumbs, Autoplay]}
         className="swiper-main flex-1"
       >
-        {images.map((image) => (
-          <SwiperSlide key={image}>
-            <Image
-              src={`/products/${image}`}
+        {images.map((image, index) => (
+          <SwiperSlide key={`${image}-${index}`}>
+            <ProductImage
+              src={image}
               alt={title}
               width={1000}
               height={1000}
               className="w-full h-full object-cover"
-              priority
+              priority={index === 0}
             />
           </SwiperSlide>
         ))}
@@ -106,14 +109,14 @@ export const SlideShow = ({
           modules={[FreeMode, Thumbs]}
           className="swiper-thumbs-container w-full px-4"
         >
-          {images.map((image) => (
-            <SwiperSlide key={image}>
-              <Image
-                src={`/products/${image}`}
+          {images.map((image, index) => (
+            <SwiperSlide key={`${image}-${index}`}>
+              <ProductImage
+                src={image}
                 alt={`${title} miniatura`}
                 width={72}
                 height={90}
-                className="w-full h-full object-cover"
+                loading="lazy"
               />
             </SwiperSlide>
           ))}

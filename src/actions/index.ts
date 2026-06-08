@@ -31,3 +31,9 @@ export * from "./users/get-paginater-user";
 export * from "./users/change-user-role";
 //*products/getAllProducts
 export * from "./products/get-all-products";
+//*products/get-categories
+export * from "./category/get-categories";
+//*products/create-update-product   
+export * from "./products/create-update-product";
+//*./products/delete-product-image
+export * from "./products/delete-product-image"

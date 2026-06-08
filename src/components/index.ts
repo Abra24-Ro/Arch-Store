@@ -49,3 +49,13 @@ export * from "./paypal/PaypalButton";
 //orders
 export * from "./orders/OrderList";
 export * from "./orders/OrderPagination"
+
+
+//*Admin product
+export * from "./product/admin/FieldError"
+export * from "./product/admin/ProductSizePicker"
+export * from "./product/admin/ProductImageGallery"
+
+export * from "./product/product-image/ProductImage"
+export * from "./ui/ConfirmDialog"
+export * from "./ui/ImageLightbox"

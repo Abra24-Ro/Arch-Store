@@ -1021,6 +1021,14 @@ paypal-basic-card-button {
   display: block !important;
 }
 
+.product-card-row {
+  transition: background-color 150ms ease;
+}
+
+.product-card-row:hover {
+  background-color: var(--color-bg-surface);
+}
+
 
 @keyframes announceFade {
   from {

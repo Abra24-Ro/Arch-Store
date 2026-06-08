@@ -4,6 +4,8 @@ import { CartProduct } from "@/src/types";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { formatCurrency } from "@/src/utils";
+import Link from "next/link";
+import { ProductImage } from "../product/product-image/ProductImage";
 
 interface Props {
   product: CartProduct;
@@ -11,7 +13,11 @@ interface Props {
   readOnly?: boolean;
 }
 
-export const CheckoutItem = ({ product, index = 0, readOnly = false }: Props) => {
+export const CheckoutItem = ({
+  product,
+  index = 0,
+  readOnly = false,
+}: Props) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -26,8 +32,7 @@ export const CheckoutItem = ({ product, index = 0, readOnly = false }: Props) =>
         overflow: "hidden",
       }}
     >
-      {/* Imagen */}
-      <div style={{ flexShrink: 0 }}>
+      <Link href={`/product/${product.slug}`} style={{ flexShrink: 0 }}>
         <motion.div
           whileHover={{ scale: 1.03 }}
           transition={{ duration: 0.3, ease: [0.25, 0, 0, 1] }}
@@ -39,16 +44,14 @@ export const CheckoutItem = ({ product, index = 0, readOnly = false }: Props) =>
             background: "var(--color-bg-surface)",
           }}
         >
-          <Image
-            src={`/products/${product.image}`}
+          <ProductImage
+            src={product.image}
             alt={product.title}
-            loading="eager"
             width={80}
             height={100}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         </motion.div>
-      </div>
+      </Link>
 
       {/* Info */}
       <div
@@ -72,7 +75,7 @@ export const CheckoutItem = ({ product, index = 0, readOnly = false }: Props) =>
               display: "inline-block",
             }}
           >
-            {product.title} 
+            {product.title}
             <motion.span
               variants={{
                 rest: { scaleX: 0, originX: 0 },

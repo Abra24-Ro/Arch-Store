@@ -2,13 +2,13 @@
 
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, FreeMode, Navigation, Pagination } from "swiper/modules";
-import Image from "next/image";
 import "swiper/css";
 import "swiper/css/free-mode";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "./slideshow.css";
 import { StockLabel } from "../../stock-label/StockLabel";
+import { ProductImage } from "../..";
 
 interface SlideShowProps {
   images: string[];
@@ -50,8 +50,8 @@ export const SlideShowMobile = ({
       >
         {images.map((image) => (
           <SwiperSlide key={image}>
-            <Image
-              src={`/products/${image}`}
+            <ProductImage
+              src={image}
               alt={title}
               width={500}
               height={500}
