@@ -1,13 +1,12 @@
 "use server";
 
-import { auth } from "@/src/auth";
+import { requireAdmin } from "@/src/lib/auth-guards";
 import { prisma } from "@/src/lib/prisma";
 
 export const getAllOrders = async () => {
-  const session = await auth();
+  const admin = await requireAdmin();
 
-  if (!session?.user) return { status: "Unauthorized" };
-  if (session.user.role !== "admin") return { status: "Forbidden" };
+  if (!admin.ok) return { status: admin.status };
 
   try {
     const orders = await prisma.order.findMany({

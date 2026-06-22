@@ -1,6 +1,7 @@
 "use server";
 
 import { Product, Size } from "@/src/generated/prisma";
+import { requireAdmin } from "@/src/lib/auth-guards";
 import { prisma } from "@/src/lib/prisma";
 import { productSchema } from "@/src/schemas";
 import { revalidatePath } from "next/cache";
@@ -13,6 +14,15 @@ cloudinary.config({
 });
 
 export const createOrUpdateProduct = async (data: FormData) => {
+  const admin = await requireAdmin();
+
+  if (!admin.ok) {
+    return {
+      ok: false,
+      message: admin.message,
+    };
+  }
+
   const parsed = productSchema.safeParse(Object.fromEntries(data.entries()));
 
   if (!parsed.success) {

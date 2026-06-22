@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { v2 as cloudinary } from "cloudinary";
 import { prisma } from "@/src/lib/prisma";
+import { requireAdmin } from "@/src/lib/auth-guards";
 
 cloudinary.config({
   cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
@@ -11,6 +12,15 @@ cloudinary.config({
 });
 
 export const deleteProductImage = async (imageId: number, imageUrl: string) => {
+  const admin = await requireAdmin();
+
+  if (!admin.ok) {
+    return {
+      ok: false,
+      message: admin.message,
+    };
+  }
+
   if (!imageUrl.startsWith("http")) {
     return {
       ok: false,
