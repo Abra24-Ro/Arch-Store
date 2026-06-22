@@ -1,8 +1,19 @@
 "use server";
 
+import { requireAdmin } from "@/src/lib/auth-guards";
 import { prisma } from "@/src/lib/prisma";
 
 export const getAllProducts = async () => {
+  const admin = await requireAdmin();
+
+  if (!admin.ok) {
+    return {
+      status: admin.status,
+      message: admin.message,
+      products: [],
+    };
+  }
+
   try {
     const products = await prisma.product.findMany({
       orderBy: { title: "asc" },

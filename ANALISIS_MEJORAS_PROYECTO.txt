@@ -1,0 +1,435 @@
+# ANÁLISIS GENERAL DEL PROYECTO
+
+## 1. Resumen del proyecto
+
+Este proyecto es un e-commerce de práctica tipo "Teslo Shop", personalizado como Arc Store. Permite navegar productos, filtrarlos por género, ver detalle de producto, agregar productos al carrito, registrar/iniciar sesión, guardar dirección, crear órdenes, pagar con PayPal y administrar productos, usuarios y órdenes desde una zona admin.
+
+La arquitectura usa Next.js con App Router. La carpeta `src/app` contiene rutas, layouts, páginas y route handlers. La carpeta `src/actions` concentra Server Actions para acceso a datos y reglas de negocio. La carpeta `src/components` contiene UI compartida, componentes de producto, carrito, checkout, órdenes y administración. La carpeta `src/store` maneja estado cliente con Zustand, principalmente carrito, dirección y UI. La carpeta `src/schemas` valida datos con Zod. La carpeta `src/utils` agrupa cálculos, formateo y helpers. La carpeta `prisma` contiene el esquema de base de datos y migraciones.
+
+La estructura general es buena para un proyecto de aprendizaje: separa rutas, acciones, componentes, stores, schemas y utils. El mayor punto a mejorar no es la cantidad de carpetas, sino reforzar las fronteras de seguridad: algunas acciones críticas dependen demasiado de que la UI admin o checkout sea la única forma de ejecutarlas.
+
+## 2. Stack tecnológico
+
+- Next.js 16.2.4: framework principal, App Router, Server Components, Route Handlers, Server Actions, metadata y despliegue en Vercel.
+- React 19.2.4: construcción de componentes interactivos.
+- TypeScript 5: tipado estático del proyecto.
+- Prisma 7.8.0: ORM para modelar y consultar PostgreSQL.
+- PostgreSQL: base de datos relacional.
+- NextAuth 5 beta: autenticación con provider de credentials.
+- bcryptjs: hash y comparación de contraseñas.
+- Zod: validación de formularios y datos de servidor.
+- React Hook Form: manejo de formularios en cliente.
+- Zustand: estado global cliente, persistido en localStorage para carrito y dirección.
+- PayPal React SDK y Route Handlers propios: creación y captura de pagos.
+- Cloudinary: subida y eliminación de imágenes de productos.
+- Tailwind CSS 4 + CSS global propio + shadcn/radix: sistema visual y componentes base.
+- Framer Motion: microinteracciones y animaciones.
+- Sonner: notificaciones/toasts.
+- Docker Compose: base PostgreSQL local.
+- Vercel: despliegue del proyecto.
+
+## 3. Flujo principal de la aplicación
+
+El usuario entra al catálogo desde `src/app/(shop)/page.tsx`. Esa página obtiene productos con `getPaginationProductWithImages`, que consulta Prisma y devuelve productos con imágenes. Las páginas por género reutilizan la misma idea con filtros.
+
+En el detalle de producto, `src/app/(shop)/product/[slug]/page.tsx` obtiene el producto por slug con `getProductSlug`. El componente cliente `AddToCart` permite seleccionar talla y cantidad. Luego guarda el producto en Zustand mediante `useCartStore`, persistido como `shopping-cart`.
+
+El carrito se muestra desde `src/app/(shop)/cart/page.tsx`. Los componentes cliente leen el store persistido, calculan subtotales, impuestos y total desde `cart-store.ts`, y envían al usuario al checkout.
+
+El checkout tiene dos pasos principales. En `/checkout/address`, `AddressForm` valida la dirección con Zod/React Hook Form, la guarda en Zustand y opcionalmente en base de datos con `setUserAddress`. En `/checkout`, `PlaceOrderButton` toma carrito y dirección desde stores, llama `placeOrder`, crea la orden en Prisma, descuenta stock y redirige a la pantalla de confirmación.
+
+La pantalla de confirmación muestra la orden y activa PayPal. `PaypalButton` llama al route handler `/api/paypal/create-order`, que crea una orden PayPal con el total de la orden local. Luego, al aprobar el pago, llama `/api/paypal/capture-order`, captura el pago y marca la orden local como pagada.
+
+La autenticación se maneja con NextAuth credentials en `src/auth.ts`. Al iniciar sesión se guarda información del usuario en el token y, en cada session callback, se consulta el rol actualizado desde la base de datos. La zona admin usa `getSession` y layouts/páginas para redirigir usuarios no admin.
+
+La administración permite listar productos, crear/editar productos, subir imágenes a Cloudinary, listar órdenes y cambiar roles de usuarios.
+
+## 4. Cambios primordiales / necesarios
+
+- Problema detectado:
+  Las Server Actions de productos no validan internamente que el usuario sea admin.
+  Archivo o zona relacionada:
+  `src/actions/products/create-update-product.ts`, `src/actions/products/delete-product-image.ts`, `src/actions/products/get-all-products.ts`.
+  Por qué importa:
+  Aunque las páginas admin redirigen usuarios no autorizados, las acciones del servidor son una frontera de seguridad propia. Una acción sensible debe verificar sesión y rol por sí misma, porque no debería depender de que solo se llame desde una pantalla protegida.
+  Qué debería aprender con esto:
+  Autorización en profundidad, Server Actions como endpoints mutables y diferencia entre proteger UI y proteger operaciones de servidor.
+  Documentación recomendada:
+  Next.js Server Actions, NextAuth authorization callbacks, OWASP Broken Access Control.
+  Posible solución sin implementarla:
+  Crear un helper tipo `requireAdmin()` que use `auth()` y devuelva error o lance redirect/error si no hay sesión admin. Usarlo al inicio de crear/actualizar producto, borrar imagen y listar datos admin.
+
+- Problema detectado:
+  Las acciones de dirección reciben `userId` desde el cliente y no verifican sesión ni propiedad.
+  Archivo o zona relacionada:
+  `src/actions/address/set-user-address.ts`, `src/actions/address/delete-user-address.ts`, `src/actions/address/get-user-address.ts`, `src/app/(shop)/checkout/address/ui/AddressForm.tsx`.
+  Por qué importa:
+  El cliente no debe decidir sobre qué usuario se escribe. Si alguien manipula una llamada, podría intentar leer, borrar o modificar dirección de otro usuario.
+  Qué debería aprender con esto:
+  Trust boundaries: todo dato que viene del navegador es manipulable. En operaciones de usuario, el `userId` debe salir de la sesión del servidor.
+  Documentación recomendada:
+  NextAuth auth/session, Next.js Server Actions security, OWASP Broken Access Control.
+  Posible solución sin implementarla:
+  Quitar `userId` de los parámetros públicos. Dentro de cada action, llamar `auth()`, obtener `session.user.id` y operar solo sobre ese id.
+
+- Problema detectado:
+  Los endpoints de PayPal no validan sesión, propiedad de la orden ni consistencia fuerte del pago.
+  Archivo o zona relacionada:
+  `src/app/api/paypal/create-order/route.ts`, `src/app/api/paypal/capture-order/route.ts`, `src/components/paypal/PaypalButton.tsx`.
+  Por qué importa:
+  Crear o capturar pagos debe estar blindado. Actualmente se recibe un `orderId` o `paypalOrderId` y se confía demasiado en el flujo esperado. Además, la captura marca como pagada la orden derivada del `invoice_id` sin validar dueño, monto, moneda, estado previo y relación exacta con la orden local.
+  Qué debería aprender con esto:
+  Integraciones de pago seguras, validación servidor-servidor, idempotencia y reconciliación de pagos.
+  Documentación recomendada:
+  PayPal Checkout Orders API, Next.js Route Handlers, OWASP Payment Security guidance.
+  Posible solución sin implementarla:
+  Exigir sesión en ambos route handlers. En create-order, buscar la orden por `id` y `userId` de sesión. En capture-order, validar `status`, `purchase_units`, `invoice_id`, monto, moneda y que la orden local pertenece al usuario o a un flujo permitido. Guardar el PayPal order id asociado a la orden local antes de capturar.
+
+- Problema detectado:
+  Riesgo de sobreventa por verificación de stock antes de la transacción.
+  Archivo o zona relacionada:
+  `src/actions/order/place-order.ts`, `src/utils/order.utils.ts`.
+  Por qué importa:
+  El stock se consulta antes de la transacción y luego se descuenta dentro. Si dos usuarios compran al mismo tiempo, ambos podrían pasar la validación inicial y dejar stock negativo o vender más de lo disponible.
+  Qué debería aprender con esto:
+  Race conditions, transacciones, concurrencia, operaciones atómicas y consistencia de inventario.
+  Documentación recomendada:
+  Prisma transactions, PostgreSQL isolation levels, patrones de inventory reservation.
+  Posible solución sin implementarla:
+  Dentro de la transacción, descontar con condiciones atómicas: `updateMany` donde `id` coincida e `inStock >= cantidad`, verificar `count`, y abortar si no se actualizó exactamente lo esperado. Otra opción es usar reservas de stock antes del pago.
+
+- Problema detectado:
+  Se descuenta stock al crear la orden, antes de que PayPal confirme pago.
+  Archivo o zona relacionada:
+  `src/actions/order/place-order.ts`, `src/app/api/paypal/capture-order/route.ts`.
+  Por qué importa:
+  Si el usuario crea una orden pero no paga, el stock queda reducido. Para una tienda real, eso causa inventario bloqueado permanentemente o ventas perdidas.
+  Qué debería aprender con esto:
+  Estados de orden: pending, paid, cancelled, expired; reserva temporal de inventario; compensaciones.
+  Documentación recomendada:
+  Modelado de checkout e-commerce, Prisma transactions, PayPal Orders lifecycle.
+  Posible solución sin implementarla:
+  Agregar estado de orden. Reservar stock temporalmente con expiración, o descontar definitivamente solo cuando PayPal confirme pago. Crear una tarea o flujo de limpieza para órdenes pendientes vencidas.
+
+- Problema detectado:
+  Operaciones externas a Cloudinary se ejecutan dentro de una transacción de Prisma.
+  Archivo o zona relacionada:
+  `src/actions/products/create-update-product.ts`.
+  Por qué importa:
+  Las transacciones de base de datos no pueden revertir una subida a Cloudinary. Si la subida funciona pero la transacción falla, quedan imágenes huérfanas. Si la base guarda URLs pero luego Cloudinary falla parcialmente, hay inconsistencia.
+  Qué debería aprender con esto:
+  Diferencia entre transacciones de BD y efectos externos, consistencia eventual, compensating actions.
+  Documentación recomendada:
+  Prisma transactions, Cloudinary Upload API, patrones de manejo de side effects.
+  Posible solución sin implementarla:
+  Validar y subir imágenes antes o después con estrategia clara. Si falla la BD después de subir, borrar las imágenes subidas como compensación. Registrar `public_id` en la BD para eliminar con precisión.
+
+- Problema detectado:
+  Eliminación de imágenes en Cloudinary reconstruye `publicId` desde la URL.
+  Archivo o zona relacionada:
+  `src/actions/products/delete-product-image.ts`, modelo `ProductImage`.
+  Por qué importa:
+  Parsear URLs es frágil. Si cambia la estructura de Cloudinary, versión, carpeta o transformaciones, se puede borrar mal o no borrar nada.
+  Qué debería aprender con esto:
+  Persistir identificadores externos estables, no derivarlos de URLs de presentación.
+  Documentación recomendada:
+  Cloudinary public IDs, Prisma schema design.
+  Posible solución sin implementarla:
+  Guardar `publicId` junto a `url` en `ProductImage` y usar ese valor al eliminar.
+
+- Problema detectado:
+  Hay rutas de revalidación inconsistentes o con typo.
+  Archivo o zona relacionada:
+  `src/actions/products/create-update-product.ts`, `src/actions/products/delete-product-image.ts`, `src/app/(shop)/product/[slug]/page.tsx`.
+  Por qué importa:
+  La página real de producto parece ser `/product/[slug]`, pero en una acción se revalida `/products/${slug}`. Además en la página de producto aparece `revalite` en vez de `revalidate`. Esto puede causar que cambios de producto o imágenes no se reflejen como esperas.
+  Qué debería aprender con esto:
+  Cache, ISR, revalidación por path/tag y convenciones exactas de Next.js.
+  Documentación recomendada:
+  Next.js caching and revalidating, Route Segment Config.
+  Posible solución sin implementarla:
+  Auditar rutas reales y constantes de rutas. Corregir typos y usar `revalidatePath('/product/${slug}')` o `revalidateTag` de forma consistente.
+
+- Problema detectado:
+  El modelo usa `Float` para precios y totales.
+  Archivo o zona relacionada:
+  `prisma/schema.prisma`, `src/utils/order.utils.ts`, carrito y órdenes.
+  Por qué importa:
+  Los floats pueden introducir errores de precisión en dinero. En práctica puede aparecer un total con decimales inesperados o discrepancias con PayPal.
+  Qué debería aprender con esto:
+  Modelado de dinero: centavos enteros, Decimal, redondeos y consistencia entre sistemas.
+  Documentación recomendada:
+  Prisma Decimal, PostgreSQL numeric, guías de money handling.
+  Posible solución sin implementarla:
+  Migrar precios y totales a `Decimal` o guardar montos en centavos como enteros. Centralizar redondeo y conversión para UI y PayPal.
+
+- Problema detectado:
+  El archivo `.env.template` tiene placeholders y parece tener una comilla incompleta en `CLOUDINARY_API_KEY`.
+  Archivo o zona relacionada:
+  `.env.template`.
+  Por qué importa:
+  Un template incorrecto causa errores difíciles al clonar, desplegar o configurar Vercel. Además, la documentación de variables debe separar claramente públicas y privadas.
+  Qué debería aprender con esto:
+  Configuración de entornos, secretos, variables públicas `NEXT_PUBLIC_*` y checklist de deploy.
+  Documentación recomendada:
+  Next.js environment variables, Vercel Environment Variables, Cloudinary credentials.
+  Posible solución sin implementarla:
+  Revisar sintaxis del template, agrupar variables por servicio, documentar cuáles van en Vercel y nunca commitear `.env` real.
+
+## 5. Cambios secundarios
+
+- Problema detectado:
+  Hay lógica repetida de autenticación/rol en páginas admin y acciones.
+  Archivo o zona relacionada:
+  `src/app/(shop)/admin/*`, `src/actions/users/*`, `src/actions/order/admin/*`, `src/lib/get-session.ts`.
+  Por qué importa:
+  La repetición aumenta el riesgo de olvidar una validación en una ruta nueva. También dificulta leer qué rutas son públicas, privadas o admin.
+  Qué debería aprender con esto:
+  Helpers de autorización, separación de políticas y reutilización sin sobre-abstraer.
+  Documentación recomendada:
+  NextAuth callbacks, Next.js layouts, patrones RBAC.
+  Posible solución sin implementarla:
+  Crear helpers `requireUser()` y `requireAdmin()` para server components/actions. Mantener `AdminLayout`, pero no depender solo del layout.
+
+- Problema detectado:
+  Los schemas de validación son útiles pero todavía básicos.
+  Archivo o zona relacionada:
+  `src/schemas/address.schema.ts`, `src/schemas/product.schema.ts`, `src/actions/auth/register.ts`.
+  Por qué importa:
+  Campos como email, password, teléfono, código postal, slug, tags, archivos e imágenes necesitan reglas más expresivas para evitar datos sucios.
+  Qué debería aprender con esto:
+  Validación compartida cliente/servidor, mensajes de error claros, sanitización y normalización.
+  Documentación recomendada:
+  Zod, React Hook Form resolvers.
+  Posible solución sin implementarla:
+  Agregar schemas para registro/login, validación de archivos, validación de slug con regex, límites de longitud y mensajes personalizados.
+
+- Problema detectado:
+  `registerUser` captura cualquier error y devuelve mensaje genérico sin distinguir duplicados.
+  Archivo o zona relacionada:
+  `src/actions/auth/register.ts`.
+  Por qué importa:
+  Para UX y aprendizaje conviene manejar casos esperados como email duplicado, password débil o datos inválidos.
+  Qué debería aprender con esto:
+  Errores esperados vs inesperados, errores Prisma como `P2002`, diseño de respuestas de actions.
+  Documentación recomendada:
+  Prisma error reference, Zod, NextAuth credentials.
+  Posible solución sin implementarla:
+  Validar con Zod antes de crear usuario, capturar `P2002` para email duplicado y devolver un tipo de resultado consistente.
+
+- Problema detectado:
+  Hay `console.log` en flujos de producción potenciales.
+  Archivo o zona relacionada:
+  `src/components/paypal/PaypalButton.tsx`, `src/app/api/paypal/capture-order/route.ts`, `src/app/(shop)/checkout/address/ui/AddressForm.tsx`, acciones de productos.
+  Por qué importa:
+  Logs de dirección, respuestas de pago o errores completos pueden filtrar información sensible o llenar logs de Vercel.
+  Qué debería aprender con esto:
+  Logging responsable, observabilidad y protección de datos personales.
+  Documentación recomendada:
+  Vercel logs, OWASP Logging Cheat Sheet.
+  Posible solución sin implementarla:
+  Reemplazar logs de desarrollo por manejo de errores controlado. Usar logs mínimos en servidor y nunca loguear PII o respuestas completas de pago.
+
+- Problema detectado:
+  El store de dirección persiste datos personales en localStorage.
+  Archivo o zona relacionada:
+  `src/store/address/address.store.ts`, checkout.
+  Por qué importa:
+  localStorage es cómodo, pero persistir dirección y teléfono aumenta exposición en dispositivos compartidos o extensiones del navegador.
+  Qué debería aprender con esto:
+  Privacidad en frontend, almacenamiento cliente, datos personales y minimización.
+  Documentación recomendada:
+  OWASP HTML5 Security Cheat Sheet, Zustand persist.
+  Posible solución sin implementarla:
+  Persistir solo durante la sesión, usar sessionStorage, limpiar al completar compra o leer dirección desde servidor cuando el usuario esté autenticado.
+
+- Problema detectado:
+  El carrito permite cantidades sin validar contra stock hasta crear la orden.
+  Archivo o zona relacionada:
+  `src/components/product/quantity-selector`, `src/app/(shop)/product/[slug]/ui/AddToCart.tsx`, `src/store/cart/cart-store.ts`.
+  Por qué importa:
+  El servidor ya debe validar siempre, pero la UI puede prevenir errores frustrantes antes de checkout.
+  Qué debería aprender con esto:
+  Validación defensiva: UX en cliente, autoridad final en servidor.
+  Documentación recomendada:
+  React controlled components, Zustand, patrones e-commerce de stock.
+  Posible solución sin implementarla:
+  Limitar cantidad por `inStock` en UI, avisar cuando se agregue más de lo disponible y volver a validar en checkout.
+
+- Problema detectado:
+  Hay tipado flexible o escape hatches como `any`.
+  Archivo o zona relacionada:
+  `src/auth.ts`, `src/actions/products/create-update-product.ts`.
+  Por qué importa:
+  TypeScript ayuda menos cuando los puntos críticos usan `any`, especialmente en auth y errores de base de datos.
+  Qué debería aprender con esto:
+  Module augmentation, tipos de sesión/JWT, narrowing de errores.
+  Documentación recomendada:
+  NextAuth TypeScript, TypeScript unknown vs any, Prisma error handling.
+  Posible solución sin implementarla:
+  Tipar `token.data`, extender tipos de NextAuth/JWT y capturar errores como `unknown`, refinándolos con checks.
+
+- Problema detectado:
+  `getPaginatedUsers` no pagina realmente.
+  Archivo o zona relacionada:
+  `src/actions/users/get-paginater-user.ts`, `src/app/(shop)/admin/users/ui/UsersTable.tsx`.
+  Por qué importa:
+  Actualmente se trae toda la lista y se pagina en cliente. Sirve para pocos usuarios, pero no escala ni enseña paginación real de servidor.
+  Qué debería aprender con esto:
+  Paginación server-side, query params, `skip/take`, conteos y filtros.
+  Documentación recomendada:
+  Prisma pagination, Next.js searchParams.
+  Posible solución sin implementarla:
+  Pasar `page`, `take` y `role` a la action, usar `findMany` con `skip/take` y devolver `totalPages`.
+
+- Problema detectado:
+  Hay inconsistencias de nombres y typos.
+  Archivo o zona relacionada:
+  `get-paginater-user.ts`, `genaretePaginationNumbers.ts`, `Summarypanel.tsx`, `Cartsummary.tsx`, `Shippinginfo.tsx`, variable `revalite`.
+  Por qué importa:
+  No rompe necesariamente, pero reduce legibilidad y dificulta buscar archivos. En proyectos reales, los nombres son parte de la arquitectura.
+  Qué debería aprender con esto:
+  Convenciones de naming, consistencia y mantenibilidad.
+  Documentación recomendada:
+  TypeScript/React naming conventions, guía interna de estructura.
+  Posible solución sin implementarla:
+  Planear una limpieza controlada de nombres, idealmente en un commit separado y con imports actualizados.
+
+- Problema detectado:
+  README tiene instrucciones mezcladas o mal formateadas.
+  Archivo o zona relacionada:
+  `README.md`.
+  Por qué importa:
+  El README es el onboarding del proyecto. Si está confuso, reproducir el entorno local se vuelve más difícil.
+  Qué debería aprender con esto:
+  Documentación técnica mínima, pasos reproducibles y variables de entorno.
+  Documentación recomendada:
+  Vercel deployment docs, Prisma migrate docs, Docker Compose docs.
+  Posible solución sin implementarla:
+  Reescribir pasos: instalar, copiar env, levantar Docker, migrar, seed, dev. Agregar sección de variables requeridas sin secretos.
+
+- Problema detectado:
+  Hay mezcla de estilos inline, CSS global, Tailwind y componentes UI.
+  Archivo o zona relacionada:
+  `src/app/globals.css`, componentes de checkout/admin/productos.
+  Por qué importa:
+  Funciona, pero dificulta mantener consistencia visual y reutilizar patrones. También hace más difícil refactorizar UI.
+  Qué debería aprender con esto:
+  Sistemas de diseño, tokens, composición de clases y separación de estilos.
+  Documentación recomendada:
+  Tailwind CSS 4, shadcn/ui, CSS custom properties.
+  Posible solución sin implementarla:
+  Definir patrones reutilizables para títulos, paneles, formularios y botones. Reducir inline styles gradualmente, sin reescribir toda la UI.
+
+- Problema detectado:
+  Metadata de producto puede construir Open Graph image incorrecta.
+  Archivo o zona relacionada:
+  `src/app/(shop)/product/[slug]/page.tsx`.
+  Por qué importa:
+  `product.images` puede contener URLs completas de Cloudinary o paths locales. Construir `/products/${product?.images[1]}` puede dar URLs inválidas.
+  Qué debería aprender con esto:
+  Metadata dinámica, URLs absolutas/relativas, SEO social previews.
+  Documentación recomendada:
+  Next.js Metadata API, Open Graph images.
+  Posible solución sin implementarla:
+  Crear helper para normalizar imagen OG: si empieza con `http`, usarla directa; si es local, anteponer `/products/`. Manejar fallback.
+
+## 6. Cambios opcionales
+
+- Mejoras UI/UX:
+  Agregar estados vacíos más consistentes, feedback de stock bajo, resumen de pasos de checkout, confirmación antes de borrar imágenes y botón real para favoritos.
+
+- Nuevas features:
+  Lista de favoritos persistida por usuario, búsqueda de productos, filtros por precio/talla/categoría, cupones, estado de orden, historial de pagos y perfil editable.
+
+- Testing:
+  Agregar tests unitarios para `calculateOrderTotals`, `findOutOfStockProduct`, paginación, schemas Zod y formatters. Luego tests de integración para `placeOrder`, PayPal handlers mockeados y autorización admin.
+
+- Accesibilidad:
+  Revisar labels, foco visible, navegación por teclado, botones con estado disabled, contraste de textos terciarios y mensajes de error asociados a inputs.
+
+- SEO:
+  Corregir metadata dinámica de productos, agregar robots/sitemap si el proyecto crece, usar titles específicos por categoría y páginas admin no indexables.
+
+- Mejor documentación interna:
+  Documentar flujo checkout, variables de entorno, modelo de datos, roles y cómo sembrar datos. Incluir diagramas simples de flujo.
+
+- Mejor manejo de errores:
+  Definir un tipo de resultado común para actions: `{ ok, data, message, code }`. Mostrar errores de validación por campo cuando aplique.
+
+- Refactor avanzado:
+  Separar servicios de dominio: `orders.service.ts`, `payments.service.ts`, `products.service.ts`. Mantener actions como capa delgada que valida auth y llama servicios.
+
+- Performance:
+  Migrar import de Google Fonts en CSS a `next/font` si aplica, revisar tamaños de imágenes, usar `priority` solo en imágenes críticas y medir páginas con Lighthouse.
+
+- Observabilidad:
+  Agregar logs mínimos estructurados en servidor para errores inesperados, sin datos sensibles. Considerar Sentry o herramienta similar cuando sea un proyecto más serio.
+
+## 7. Roadmap recomendado de aprendizaje
+
+- Fase 1: entender el proyecto
+  Leer el flujo completo: catálogo -> producto -> carrito -> dirección -> orden -> PayPal -> confirmación. Dibujar el modelo Prisma y relacionarlo con cada página. Identificar qué corre en servidor y qué corre en cliente.
+
+- Fase 2: corregir lo necesario
+  Priorizar autorización en Server Actions, userId desde sesión, endpoints PayPal, stock concurrente, revalidación de rutas y `.env.template`. Estas mejoras enseñan seguridad real y consistencia de datos.
+
+- Fase 3: refactorizar
+  Crear helpers `requireUser`/`requireAdmin`, tipar mejor NextAuth, limpiar nombres/typos, normalizar respuestas de actions y mejorar schemas Zod. Hacerlo en commits pequeños.
+
+- Fase 4: agregar mejoras propias
+  Elegir features que enseñen conceptos nuevos: favoritos con BD, búsqueda, filtros, paginación server-side, estados de orden, reservas de inventario o panel admin más completo.
+
+- Fase 5: documentar y desplegar mejor
+  Mejorar README, revisar variables en Vercel, documentar setup local, agregar checklist de deploy y crear pruebas mínimas antes de cada subida.
+
+## 8. Documentación que debería consultar
+
+- Framework principal:
+  Next.js App Router: https://nextjs.org/docs/app
+  Next.js Server Actions: https://nextjs.org/docs/app/building-your-application/data-fetching/server-actions-and-mutations
+  Next.js Route Handlers: https://nextjs.org/docs/app/building-your-application/routing/route-handlers
+  Next.js Caching/Revalidating: https://nextjs.org/docs/app/building-your-application/caching
+  Next.js Metadata API: https://nextjs.org/docs/app/api-reference/functions/generate-metadata
+
+- Librerías importantes:
+  Prisma: https://www.prisma.io/docs
+  Prisma transactions: https://www.prisma.io/docs/orm/prisma-client/queries/transactions
+  NextAuth/Auth.js: https://authjs.dev
+  Zod: https://zod.dev
+  React Hook Form: https://react-hook-form.com
+  Zustand: https://zustand.docs.pmnd.rs
+  Tailwind CSS: https://tailwindcss.com/docs
+  shadcn/ui: https://ui.shadcn.com
+  Cloudinary Node SDK: https://cloudinary.com/documentation/node_integration
+  PayPal Checkout Orders API: https://developer.paypal.com/docs/api/orders/v2
+
+- Deploy en Vercel:
+  Vercel Next.js deployment: https://vercel.com/docs/frameworks/nextjs
+  Vercel Environment Variables: https://vercel.com/docs/projects/environment-variables
+
+- Testing:
+  Vitest: https://vitest.dev
+  Testing Library React: https://testing-library.com/docs/react-testing-library/intro
+  Playwright: https://playwright.dev
+
+- Seguridad:
+  OWASP Top 10: https://owasp.org/www-project-top-ten
+  OWASP Broken Access Control: https://owasp.org/Top10/A01_2021-Broken_Access_Control
+  OWASP Logging Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html
+  OWASP HTML5 Security Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/HTML5_Security_Cheat_Sheet.html
+
+- Performance:
+  Web Vitals: https://web.dev/vitals
+  Lighthouse: https://developer.chrome.com/docs/lighthouse
+  Next.js Image Optimization: https://nextjs.org/docs/app/building-your-application/optimizing/images
+
+## 9. Conclusión
+
+El proyecto está bastante sólido como práctica: tiene una arquitectura reconocible, usa tecnologías actuales, separa muchas responsabilidades y ya cubre un flujo e-commerce completo. Se nota una buena intención de organizar por dominios: productos, carrito, checkout, órdenes, auth y admin.
+
+Lo que más deberías priorizar no es agregar features nuevas todavía, sino fortalecer las fronteras de servidor. Las mejoras más valiosas para tu aprendizaje son: autorización dentro de Server Actions, no confiar en `userId` enviado desde cliente, validar pagos de PayPal con rigor, manejar stock de forma atómica y corregir revalidación/cache.
+
+Después de eso, el proyecto puede convertirse en un excelente laboratorio para practicar refactor, testing, diseño de schemas, seguridad, performance y deploy profesional. Mi recomendación es trabajarlo por fases, con commits pequeños, escribiendo una nota corta por cada mejora: qué problema resolviste, qué aprendiste y cómo lo verificaste.
+
+No se ejecutaron build, test, lint ni instalación durante este análisis.

@@ -1,20 +1,26 @@
 "use server";
 
-import { auth } from "@/src/auth";
+import { requireAdmin } from "@/src/lib/auth-guards";
 import { prisma } from "@/src/lib/prisma";
 import { revalidatePath } from "next/cache";
+
+// TODO:
+//* Actualmente el rol actual llega desde el cliente.
+//* En una futura refactorización se debería consultar
+//* el rol actual desde la base de datos y calcular
+//* el siguiente estado en el servidor.
 
 export const changeUserRole = async (
   userId: string,
   role: "admin" | "user",
 ) => {
-  const session = await auth();
+  const admin = await requireAdmin();
 
-  if (!session?.user) return { status: "Unauthorized" };
-  if (session.user.role !== "admin") return { status: "Forbidden" };
+  if (!admin.ok) return { status: admin.status };
+
   try {
     const newRole = role === "admin" ? "user" : "admin";
-    const user = await prisma.user.update({
+    await prisma.user.update({
       where: { id: userId },
       data: { role: newRole },
     });

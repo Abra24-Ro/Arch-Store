@@ -1,0 +1,785 @@
+# ROADMAP DE MEJORAS DEL PROYECTO
+
+## 1. Objetivo general del roadmap
+
+El objetivo es mejorar el proyecto de forma progresiva, segura y educativa, usando el e-commerce como laboratorio full stack/backend.
+
+La prioridad no será agregar features nuevas, sino fortalecer fundamentos reales: autorización, seguridad en Server Actions, manejo correcto de sesión, validaciones, tipado, consistencia de datos, testing, control de stock, pagos y despliegue responsable en Vercel.
+
+Al finalizar este roadmap deberías entender mejor:
+- Cómo proteger operaciones del servidor.
+- Cómo separar autenticación de autorización.
+- Cómo validar datos antes de tocar la base de datos.
+- Cómo trabajar con ramas sin romper main.
+- Cómo probar manualmente cambios críticos.
+- Cómo mejorar un proyecto existente sin perderte agregando features sin propósito.
+
+## 2. Reglas de trabajo con Git y Vercel
+
+main debe mantenerse estable porque está conectado a Vercel y hace deploy automático.
+
+Cada mejora debe hacerse en una rama separada. No se debe trabajar directo sobre main.
+
+Nombres sugeridos de ramas:
+- fix/week-01-admin-server-actions-auth
+- fix/week-02-user-session-ownership
+- chore/week-03-routes-env-cleanup
+- refactor/week-04-zod-error-handling
+- refactor/week-05-auth-prisma-types
+- feature/week-06-admin-server-pagination
+- fix/week-07-privacy-logs-cleanup
+- test/week-08-core-unit-tests
+- fix/week-09-stock-transactions
+- refactor/week-10-paypal-order-status
+
+Flujo recomendado, solo como ejemplo:
+
+git checkout main
+git pull origin main
+git checkout -b fix/admin-server-actions-auth
+
+git status
+git add .
+git commit -m "fix: protect admin product server actions"
+git push origin fix/admin-server-actions-auth
+
+Cuándo hacer commit:
+- Cuando una mejora pequeña esté completa.
+- Cuando la app siga funcionando.
+- Cuando el cambio tenga un propósito claro.
+- No mezclar varias semanas en un solo commit.
+
+Cuándo hacer merge a main:
+- Solo después de probar manualmente.
+- Solo después de revisar el diff.
+- Solo si no hay archivos modificados innecesarios.
+- Solo si entiendes qué cambió y por qué.
+
+Qué verificar antes de mergear:
+- Login funciona.
+- Catálogo funciona.
+- Carrito funciona.
+- Checkout no se rompe.
+- Admin funciona si aplica.
+- No hay secretos expuestos.
+- No hay errores visibles en consola.
+- Vercel debería poder desplegar.
+
+Qué hacer si Vercel falla después del merge:
+- No seguir agregando cambios.
+- Revisar logs de Vercel.
+- Identificar el commit que rompió el deploy.
+- Crear una rama de fix desde main.
+- Si el error es grave, revertir el merge con un commit de reversión.
+
+Cómo documentar cada mejora:
+- Escribir qué problema se resolvió.
+- Qué archivos se tocaron.
+- Qué aprendiste.
+- Qué pruebas manuales hiciste.
+- Qué quedó pendiente.
+
+## 3. Estructura semanal
+
+## Semana 1: Autorización en Server Actions admin
+
+### Objetivo de la semana
+Proteger las acciones de productos desde el servidor, no solo desde las páginas admin.
+
+### Habilidades que voy a aprender
+Server Actions, Auth.js auth(), autorización por rol, defensa en profundidad, OWASP Broken Access Control.
+
+### Rama sugerida
+fix/week-01-admin-server-actions-auth
+
+### Cambios incluidos
+Validar rol admin dentro de acciones como crear/editar producto, borrar imagen y operaciones admin sensibles.
+
+### Por dónde empezar
+1. Leer archivos relacionados.
+2. Revisar documentación de Auth.js y OWASP Broken Access Control.
+3. Identificar qué acciones modifican productos.
+4. Diseñar mentalmente un requireAdmin().
+5. Implementar el cambio más pequeño.
+6. Probar manualmente con usuario admin y usuario normal.
+7. Hacer commit.
+8. Preparar merge.
+
+### Archivos o carpetas a revisar
+src/actions/products/create-update-product.ts
+src/actions/products/delete-product-image.ts
+src/actions/products/get-all-products.ts
+src/auth.ts
+src/lib/get-session.ts
+src/app/(shop)/admin/layout.tsx
+
+### Documentación recomendada
+Auth.js Get Session
+Next.js Server Actions
+OWASP Broken Access Control
+
+### Checklist antes de implementar
+¿Sé qué devuelve auth()?
+¿Sé diferenciar authentication y authorization?
+¿Sé por qué proteger una página no protege una acción?
+¿Sé qué acciones deberían requerir admin?
+
+### Checklist de pruebas manuales
+Probar acceso admin con usuario admin.
+Intentar acceder con usuario normal.
+Intentar crear/editar producto como admin.
+Confirmar que usuario normal no puede ejecutar acciones admin.
+Verificar que la tienda pública sigue funcionando.
+
+### Posibles riesgos
+Bloquear accidentalmente al admin.
+Romper formularios de producto.
+Duplicar lógica de autorización.
+
+### Resultado esperado
+Las acciones admin quedan protegidas desde servidor y no dependen solo de la UI.
+
+### Commit sugerido
+fix: protect admin product server actions
+
+## Semana 2: No confiar en userId enviado desde cliente
+
+### Objetivo de la semana
+Evitar que el cliente decida sobre qué usuario se guardan, leen o borran direcciones.
+
+### Habilidades que voy a aprender
+Propiedad de datos, session ownership, Server Actions seguras, trust boundaries.
+
+### Rama sugerida
+fix/week-02-user-session-ownership
+
+### Cambios incluidos
+Usar session.user.id dentro de acciones de dirección, en vez de recibir userId desde componentes cliente.
+
+### Por dónde empezar
+1. Leer acciones de address.
+2. Revisar AddressForm.
+3. Identificar dónde se pasa userId desde cliente.
+4. Diseñar solución usando auth().
+5. Implementar cambio pequeño.
+6. Probar guardar y borrar dirección.
+7. Hacer commit.
+8. Preparar merge.
+
+### Archivos o carpetas a revisar
+src/actions/address/set-user-address.ts
+src/actions/address/delete-user-address.ts
+src/actions/address/get-user-address.ts
+src/app/(shop)/checkout/address/ui/AddressForm.tsx
+src/app/(shop)/checkout/address/page.tsx
+
+### Documentación recomendada
+Auth.js session
+Next.js Server Actions security
+OWASP Broken Access Control
+
+### Checklist antes de implementar
+¿Por qué el cliente no debe enviar userId?
+¿Qué pasa si un usuario manipula un request?
+¿La acción puede saber el usuario desde auth()?
+
+### Checklist de pruebas manuales
+Login con usuario normal.
+Guardar dirección.
+Editar dirección.
+No guardar dirección.
+Continuar al checkout.
+Cerrar sesión y verificar redirecciones.
+
+### Posibles riesgos
+Romper precarga de dirección.
+Romper flujo checkout/address.
+Confundir datos del store con datos de DB.
+
+### Resultado esperado
+Las direcciones se asocian siempre al usuario autenticado del servidor.
+
+### Commit sugerido
+fix: derive address ownership from session
+
+## Semana 3: Revalidación, rutas, typos importantes y env template
+
+### Objetivo de la semana
+Corregir inconsistencias que pueden causar bugs silenciosos o mala DX.
+
+### Habilidades que voy a aprender
+Next.js caching, revalidatePath, route naming, mantenimiento del proyecto, configuración de entorno.
+
+### Rama sugerida
+chore/week-03-routes-env-cleanup
+
+### Cambios incluidos
+Revisar rutas de revalidación, typo revalite/revalidate, nombres de archivos muy confusos y .env.template.
+
+### Por dónde empezar
+1. Leer rutas reales en app.
+2. Compararlas con revalidatePath.
+3. Revisar .env.template.
+4. Listar typos prioritarios.
+5. Corregir solo lo importante.
+6. Probar catálogo y admin.
+7. Hacer commit.
+8. Preparar merge.
+
+### Archivos o carpetas a revisar
+src/app/(shop)/product/[slug]/page.tsx
+src/actions/products/create-update-product.ts
+src/actions/products/delete-product-image.ts
+.env.template
+README.md
+src/utils/genaretePaginationNumbers.ts
+src/actions/users/get-paginater-user.ts
+
+### Documentación recomendada
+Next.js Caching and Revalidating
+Next.js Route Segment Config
+Vercel Environment Variables
+
+### Checklist antes de implementar
+¿Cuál es la ruta real del producto?
+¿Qué paths se revalidan hoy?
+¿El template de env permite levantar el proyecto sin confusión?
+
+### Checklist de pruebas manuales
+Editar producto.
+Ver detalle de producto.
+Eliminar imagen.
+Revisar que el cambio se refleje.
+Levantar mentalmente setup desde README/env template.
+
+### Posibles riesgos
+Romper imports si se renombran archivos.
+Revalidar una ruta incorrecta.
+Cambiar demasiado en una sola semana.
+
+### Resultado esperado
+El proyecto queda más consistente y más fácil de mantener.
+
+### Commit sugerido
+chore: fix route revalidation and environment template
+
+## Semana 4: Validaciones con Zod y manejo de errores
+
+### Objetivo de la semana
+Mejorar la calidad de datos y los mensajes de error en operaciones importantes.
+
+### Habilidades que voy a aprender
+Zod avanzado, validación server-side, errores esperados vs inesperados, UX de formularios.
+
+### Rama sugerida
+refactor/week-04-zod-error-handling
+
+### Cambios incluidos
+Validar registro/login/productos/dirección con reglas más claras y manejar errores Prisma esperados como duplicados.
+
+### Por dónde empezar
+1. Leer schemas actuales.
+2. Revisar actions que reciben datos externos.
+3. Identificar errores esperados.
+4. Diseñar formato de respuesta consistente.
+5. Mejorar un flujo primero.
+6. Probar manualmente.
+7. Hacer commit.
+8. Preparar merge.
+
+### Archivos o carpetas a revisar
+src/schemas/address.schema.ts
+src/schemas/product.schema.ts
+src/actions/auth/register.ts
+src/actions/auth/login.ts
+src/actions/products/create-update-product.ts
+
+### Documentación recomendada
+Zod
+React Hook Form resolvers
+Prisma error reference
+
+### Checklist antes de implementar
+¿Qué datos vienen del usuario?
+¿Qué validación vive en cliente?
+¿Qué validación debe repetirse en servidor?
+¿Qué errores deberían tener mensaje específico?
+
+### Checklist de pruebas manuales
+Registro con email válido.
+Registro con email repetido.
+Producto con slug repetido.
+Producto sin talla.
+Dirección incompleta.
+Mensajes de error entendibles.
+
+### Posibles riesgos
+Endurecer demasiado validaciones.
+Romper formularios existentes.
+Mostrar errores técnicos al usuario.
+
+### Resultado esperado
+Los datos entran más limpios y los errores son más controlados.
+
+### Commit sugerido
+refactor: improve validation and expected error handling
+
+## Semana 5: Tipado avanzado de Auth.js, Prisma y eliminación de any
+
+### Objetivo de la semana
+Reducir escapes de TypeScript en zonas críticas como auth y manejo de errores.
+
+### Habilidades que voy a aprender
+Module augmentation, tipos de sesión/JWT, unknown vs any, errores tipados de Prisma.
+
+### Rama sugerida
+refactor/week-05-auth-prisma-types
+
+### Cambios incluidos
+Tipar mejor session.user, token.data y errores en acciones de productos.
+
+### Por dónde empezar
+1. Leer nextauth.d.ts.
+2. Revisar auth.ts.
+3. Identificar any.
+4. Revisar docs de TypeScript en Auth.js.
+5. Diseñar tipos mínimos.
+6. Implementar sin cambiar comportamiento.
+7. Probar login/admin.
+8. Hacer commit.
+
+### Archivos o carpetas a revisar
+src/auth.ts
+nextauth.d.ts
+src/actions/products/create-update-product.ts
+src/types/user.interface.ts
+
+### Documentación recomendada
+Auth.js TypeScript
+TypeScript narrowing
+Prisma error handling
+
+### Checklist antes de implementar
+¿Qué campos necesita session.user?
+¿Qué campos vienen del token?
+¿Por qué unknown es más seguro que any?
+¿Cómo detectar P2002 sin usar any?
+
+### Checklist de pruebas manuales
+Login.
+Logout.
+Acceso admin.
+Cambio de rol.
+Crear producto.
+Verificar que no cambió comportamiento visible.
+
+### Posibles riesgos
+Romper tipos globales.
+Confundir User de Prisma con User de NextAuth.
+Sobretipar antes de entender.
+
+### Resultado esperado
+Auth y errores críticos quedan más claros y seguros para TypeScript.
+
+### Commit sugerido
+refactor: strengthen auth and prisma error types
+
+## Semana 6: Paginación server-side real en usuarios/admin
+
+### Objetivo de la semana
+Evitar traer todos los usuarios al cliente y practicar paginación backend real.
+
+### Habilidades que voy a aprender
+Paginación con Prisma, searchParams, filtros server-side, diseño de tablas admin.
+
+### Rama sugerida
+feature/week-06-admin-server-pagination
+
+### Cambios incluidos
+Convertir listado de usuarios admin a paginación real con page/take/filtro desde servidor.
+
+### Por dónde empezar
+1. Leer página admin users.
+2. Leer getPaginatedUsers.
+3. Revisar UsersTable.
+4. Diseñar query params.
+5. Implementar paginación pequeña.
+6. Probar filtros y páginas.
+7. Hacer commit.
+8. Preparar merge.
+
+### Archivos o carpetas a revisar
+src/actions/users/get-paginater-user.ts
+src/app/(shop)/admin/users/page.tsx
+src/app/(shop)/admin/users/ui/UsersTable.tsx
+src/components/orders/OrderPagination.tsx
+
+### Documentación recomendada
+Prisma pagination
+Next.js searchParams
+Next.js navigation
+
+### Checklist antes de implementar
+¿Qué se pagina hoy en cliente?
+¿Qué debería paginarse en servidor?
+¿Cómo calcular totalPages?
+¿Cómo conservar filtros?
+
+### Checklist de pruebas manuales
+Entrar a admin/users.
+Cambiar páginas.
+Filtrar admin/user.
+Verificar que no se pierde filtro.
+Probar con usuario no admin.
+
+### Posibles riesgos
+Romper UX de tabla.
+Duplicar paginación.
+Crear demasiada lógica cliente/servidor mezclada.
+
+### Resultado esperado
+La paginación admin enseña un patrón real y escalable.
+
+### Commit sugerido
+feature: add server-side pagination for admin users
+
+## Semana 7: Privacidad en localStorage, logs y datos sensibles
+
+### Objetivo de la semana
+Reducir exposición de información personal y limpiar logs innecesarios.
+
+### Habilidades que voy a aprender
+Privacidad frontend, localStorage/sessionStorage, logging responsable, PII.
+
+### Rama sugerida
+fix/week-07-privacy-logs-cleanup
+
+### Cambios incluidos
+Revisar persistencia de dirección, limpiar console.log de checkout/PayPal/address y evitar logs de información sensible.
+
+### Por dónde empezar
+1. Leer stores persistidos.
+2. Buscar console.log.
+3. Clasificar logs útiles vs peligrosos.
+4. Decidir qué datos no deberían persistirse.
+5. Cambiar un flujo pequeño.
+6. Probar checkout.
+7. Hacer commit.
+8. Preparar merge.
+
+### Archivos o carpetas a revisar
+src/store/address/address.store.ts
+src/store/cart/cart-store.ts
+src/app/(shop)/checkout/address/ui/AddressForm.tsx
+src/app/api/paypal/capture-order/route.ts
+src/components/paypal/PaypalButton.tsx
+
+### Documentación recomendada
+OWASP HTML5 Security Cheat Sheet
+OWASP Logging Cheat Sheet
+Zustand persist
+
+### Checklist antes de implementar
+¿Qué datos personales se guardan?
+¿Es necesario persistir dirección?
+¿Qué logs podrían exponer información sensible?
+¿Qué debe quedar visible solo para desarrollo?
+
+### Checklist de pruebas manuales
+Completar dirección.
+Recargar checkout.
+Completar pedido.
+Ver consola del navegador.
+Ver que no hay logs sensibles.
+
+### Posibles riesgos
+Perder comodidad del usuario en checkout.
+Romper hidratación del store.
+Eliminar logs útiles para depuración.
+
+### Resultado esperado
+El proyecto maneja datos personales con más cuidado.
+
+### Commit sugerido
+fix: reduce sensitive client storage and logs
+
+## Semana 8: Tests unitarios para utils, schemas y lógica de órdenes
+
+### Objetivo de la semana
+Agregar pruebas pequeñas a la lógica más fácil de aislar.
+
+### Habilidades que voy a aprender
+Testing unitario, casos borde, validación automática, diseño de funciones puras.
+
+### Rama sugerida
+test/week-08-core-unit-tests
+
+### Cambios incluidos
+Tests para cálculos de orden, stock, paginación, formatters y schemas.
+
+### Por dónde empezar
+1. Elegir herramienta de testing.
+2. Revisar si ya hay configuración.
+3. Empezar por utils puros.
+4. Crear casos simples.
+5. Agregar casos borde.
+6. Ejecutar tests.
+7. Hacer commit.
+8. Preparar merge.
+
+### Archivos o carpetas a revisar
+src/utils/order.utils.ts
+src/utils/formatCurrency.ts
+src/utils/genaretePaginationNumbers.ts
+src/schemas/address.schema.ts
+src/schemas/product.schema.ts
+package.json
+
+### Documentación recomendada
+Vitest
+Testing Library
+Zod testing patterns
+
+### Checklist antes de implementar
+¿Qué funciones no dependen de DB?
+¿Qué casos borde existen?
+¿Qué no conviene testear todavía?
+¿Necesito instalar dependencia? Si sí, pedir permiso antes.
+
+### Checklist de pruebas manuales
+Ejecutar tests unitarios.
+Probar manualmente catálogo.
+Probar checkout.
+Confirmar que no cambió comportamiento.
+
+### Posibles riesgos
+Instalar dependencias sin plan.
+Testear implementación en vez de comportamiento.
+Crear tests frágiles.
+
+### Resultado esperado
+Primer set de pruebas útil y mantenible.
+
+### Commit sugerido
+test: add unit tests for order utils and schemas
+
+## Semana 9: Stock, transacciones y concurrencia
+
+### Objetivo de la semana
+Mejorar la consistencia del inventario y entender riesgos de compras simultáneas.
+
+### Habilidades que voy a aprender
+Transacciones, race conditions, updates atómicos, consistencia de inventario.
+
+### Rama sugerida
+fix/week-09-stock-transactions
+
+### Cambios incluidos
+Revisar placeOrder, evitar sobreventa y pensar cuándo debe descontarse stock.
+
+### Por dónde empezar
+1. Leer placeOrder.
+2. Leer utils de stock.
+3. Entender la transacción actual.
+4. Diseñar validación atómica.
+5. Implementar cambio pequeño.
+6. Probar stock insuficiente.
+7. Hacer commit.
+8. Preparar merge.
+
+### Archivos o carpetas a revisar
+src/actions/order/place-order.ts
+src/utils/order.utils.ts
+prisma/schema.prisma
+src/components/checkout/PlaceOrderButton.tsx
+
+### Documentación recomendada
+Prisma transactions
+PostgreSQL isolation levels
+E-commerce inventory reservation concepts
+
+### Checklist antes de implementar
+¿Cuándo se valida stock?
+¿Cuándo se descuenta stock?
+¿Qué pasa si dos usuarios compran a la vez?
+¿Qué debería pasar si falla el pago?
+
+### Checklist de pruebas manuales
+Comprar producto con stock suficiente.
+Intentar comprar más que stock.
+Verificar que stock no queda negativo.
+Crear orden y revisar estado.
+Probar flujo normal de checkout.
+
+### Posibles riesgos
+Romper creación de órdenes.
+Descontar stock incorrectamente.
+Cambiar demasiado antes de resolver estados de pago.
+
+### Resultado esperado
+El stock queda más protegido contra errores de concurrencia.
+
+### Commit sugerido
+fix: make stock decrement safer during order creation
+
+## Semana 10: PayPal más seguro, estados de orden y flujo profesional
+
+### Objetivo de la semana
+Fortalecer el flujo de pago y modelar órdenes de forma más realista.
+
+### Habilidades que voy a aprender
+Integraciones de pago, idempotencia, estados de orden, validación servidor-servidor.
+
+### Rama sugerida
+refactor/week-10-paypal-order-status
+
+### Cambios incluidos
+Validar propiedad de orden, monto, moneda, estado de PayPal y agregar estados de orden como pending/paid/cancelled si decides hacerlo.
+
+### Por dónde empezar
+1. Leer route handlers de PayPal.
+2. Leer PaypalButton.
+3. Revisar modelo Order.
+4. Diseñar estados de orden.
+5. Mejorar validaciones sin romper flujo.
+6. Probar pago sandbox.
+7. Hacer commit.
+8. Preparar merge.
+
+### Archivos o carpetas a revisar
+src/app/api/paypal/create-order/route.ts
+src/app/api/paypal/capture-order/route.ts
+src/components/paypal/PaypalButton.tsx
+prisma/schema.prisma
+src/app/(shop)/checkout/confirmed/[orderId]/page.tsx
+
+### Documentación recomendada
+PayPal Orders API
+Next.js Route Handlers
+Prisma migrations
+OWASP payment/security concepts
+
+### Checklist antes de implementar
+¿La orden pertenece al usuario actual?
+¿El monto de PayPal coincide con DB?
+¿La moneda coincide?
+¿Qué pasa si el pago se intenta capturar dos veces?
+¿Qué pasa si el usuario crea orden pero no paga?
+
+### Checklist de pruebas manuales
+Crear orden.
+Pagar con PayPal sandbox.
+Cancelar pago.
+Intentar recargar confirmación.
+Verificar isPaid/paidAt/transactionId.
+Verificar que no se marca pagada una orden incorrecta.
+
+### Posibles riesgos
+Romper pagos.
+Crear migración mal planificada.
+Descontar stock en el momento incorrecto.
+Dejar órdenes pendientes sin estrategia.
+
+### Resultado esperado
+El flujo de pago queda más cercano a un e-commerce real.
+
+### Commit sugerido
+refactor: strengthen paypal order validation and status flow
+
+## 4. Orden recomendado de semanas
+
+1. Semana 1: Autorización en Server Actions admin.
+2. Semana 2: No confiar en userId enviado desde cliente.
+3. Semana 3: Revalidación, rutas, typos importantes y .env.template.
+4. Semana 4: Validaciones con Zod y manejo de errores.
+5. Semana 5: Tipado avanzado de Auth.js, Prisma y eliminación de any.
+6. Semana 6: Paginación server-side real en usuarios/admin.
+7. Semana 7: Privacidad en localStorage, limpieza de logs y datos sensibles.
+8. Semana 8: Tests unitarios para utils, schemas y lógica de órdenes.
+9. Semana 9: Stock, transacciones y control de concurrencia.
+10. Semana 10: PayPal más seguro, estados de orden y flujo de pago profesional.
+
+Este orden empieza por seguridad y autorización, luego mejora consistencia y DX, después agrega testing, y deja stock/pagos para el final porque son los cambios más delicados.
+
+## 5. Flujo de trabajo semanal recomendado
+
+Cada semana puede trabajarse en bloques de 1 hora.
+
+Día 1: Lectura del problema y documentación.
+- 20 min: leer el punto del roadmap.
+- 20 min: leer documentación.
+- 20 min: escribir qué entiendes y qué dudas tienes.
+
+Día 2: Explorar código relacionado.
+- 20 min: abrir archivos principales.
+- 20 min: seguir el flujo de datos.
+- 20 min: anotar dónde está el riesgo.
+
+Día 3: Diseñar solución en notas.
+- 20 min: escribir solución ideal.
+- 20 min: reducirla a un cambio pequeño.
+- 20 min: definir pruebas manuales.
+
+Día 4: Implementar cambio pequeño.
+- 45 min: tocar solo archivos necesarios.
+- 15 min: revisar diff.
+
+Día 5: Probar manualmente.
+- 20 min: probar flujo feliz.
+- 20 min: probar usuario sin permiso.
+- 20 min: probar caso borde.
+
+Día 6: Refactorizar si es necesario.
+- 30 min: limpiar duplicación.
+- 15 min: revisar nombres.
+- 15 min: preparar commit.
+
+Día 7: Merge a main solo si todo está correcto.
+- 20 min: revisar checklist.
+- 20 min: merge.
+- 20 min: revisar deploy de Vercel.
+
+## 6. Plantilla para cada mejora
+
+- Nombre de la mejora:
+- Rama:
+- Problema:
+- Qué archivo toca:
+- Qué voy a aprender:
+- Documentación leída:
+- Solución propuesta:
+- Pruebas manuales:
+- Resultado:
+- Commit:
+- ¿Listo para merge a main? Sí/No
+
+## 7. Criterios para pasar una rama a main
+
+- La app corre localmente.
+- No hay errores visibles en consola.
+- El flujo principal sigue funcionando.
+- Login funciona.
+- Logout funciona.
+- Catálogo funciona.
+- Detalle de producto funciona.
+- Carrito funciona.
+- Checkout funciona.
+- Admin funciona si aplica.
+- Usuario normal no puede ejecutar acciones admin.
+- No hay secretos expuestos.
+- No se modificaron archivos innecesarios.
+- No se mezclaron mejoras no relacionadas.
+- El commit tiene mensaje claro.
+- Se revisó el diff antes de mergear.
+- Se entiende qué se aprendió con el cambio.
+- Vercel debe quedar verde después del merge.
+
+## 8. Conclusión
+
+Lo primero que deberías priorizar es seguridad del servidor: autorización en Server Actions, uso correcto de sesión y propiedad de datos. Eso te va a dar una base profesional mucho más fuerte que agregar features nuevas.
+
+Todavía no conviene tocar features grandes como favoritos, cupones o filtros avanzados. Antes vale más entender bien auth, permisos, validación, errores, stock y pagos.
+
+Para evitar perderte agregando features, cada rama debe responder una pregunta concreta: ¿qué problema mejora?, ¿qué habilidad aprendo?, ¿cómo pruebo que no rompí nada?
+
+Este proyecto puede ser un laboratorio serio si lo trabajas con calma: una semana, una mejora, una rama, un aprendizaje claro. Así dejas de “seguir el curso” y empiezas a pensar como desarrollador full stack responsable.
