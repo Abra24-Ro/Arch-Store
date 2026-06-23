@@ -1,4 +1,4 @@
-export const revalite = 604800; //7dias
+export const revalidate = 604800; // 7 dias
 
 import {
   ProductHeader,
