@@ -5,7 +5,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion"; // ← añadir
 import { Loader2 } from "lucide-react"; // ← añadir
 import { useState } from "react"; // ← añadir
-import {login, registerUser } from "@/src/actions";
+import { login, registerUser } from "@/src/actions";
 import { toast } from "sonner";
 
 type FormInputs = {
@@ -18,7 +18,7 @@ type FormInputs = {
 
 export const RegisterForm = () => {
   const [isLoading, setIsLoading] = useState(false); // ← añadir
- 
+
   const {
     register,
     handleSubmit,
@@ -33,14 +33,12 @@ export const RegisterForm = () => {
       const result = await registerUser(name, lastName, password, email);
 
       if (!result.success) {
-        toast.error("Este correo ya está registrado. Intenta con otro.");
+        toast.error(result.error ?? "No se pudo crear la cuenta.");
         return;
       }
       toast.success("Usuario registrado con éxito.");
       await login(email.toLocaleLowerCase(), password);
       window.location.replace("/"); // Redirige al inicio después del login
-      
-
     } catch (error) {
       console.error("Error en el registro:", error);
       toast.error("Ocurrió un error al registrar. Intenta nuevamente.");
