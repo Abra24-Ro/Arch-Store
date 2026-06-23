@@ -1,10 +1,19 @@
 "use server";
 
+import { auth } from "@/src/auth";
 import { prisma } from "@/src/lib/prisma";
 import { Address } from "@/src/types";
 
 
-export const setUserAddress = async (address: Address, userId: string) => {
+export const setUserAddress = async (address: Address) => {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  // Ownership comes from the server session, never from client-provided ids.
+  if (!userId) {
+    return { success: false, message: "Usuario no autenticado." };
+  }
+
   try {
     const newAddress = await createOrReplaceUserAddress(address, userId);
 
@@ -18,6 +27,8 @@ export const setUserAddress = async (address: Address, userId: string) => {
   }
 };
 
+
+// Receives a trusted userId derived by the public action from auth().
 const createOrReplaceUserAddress = async (address: Address, userId: string) => {
   try {
     

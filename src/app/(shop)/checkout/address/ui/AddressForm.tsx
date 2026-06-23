@@ -3,11 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { deleteUserAddress, setUserAddress } from "@/src/actions";
-import {
-  AddressFormInputs,
-  addressFormSchema,
-  addressSchema,
-} from "@/src/schemas";
+import { AddressFormInputs, addressFormSchema } from "@/src/schemas";
 import { useAddressStore } from "@/src/store";
 import { Address, Country } from "@/src/types";
 import { motion } from "framer-motion";
@@ -31,13 +27,13 @@ interface FormInputs {
 
 interface AddressFormProps {
   countries: Country[];
-  userId: string;
+
   userStoredAddress?: Partial<Address>;
 }
 
 export const AddressForm = ({
   countries,
-  userId,
+
   userStoredAddress = {},
 }: AddressFormProps) => {
   const router = useRouter();
@@ -72,19 +68,19 @@ export const AddressForm = ({
     setIsSubmitting(true);
 
     const { saveAddress, ...restAddress } = data;
-    console.log("Address to save:", restAddress);
+
     setAddress(restAddress);
 
     try {
       if (saveAddress) {
-        const result = await setUserAddress(restAddress, userId);
+        const result = await setUserAddress(restAddress);
         if (!result.success) {
           toast.error("No se pudo guardar la dirección.");
           return;
         }
         toast.success("Dirección guardada.");
       } else {
-        await deleteUserAddress(userId);
+        await deleteUserAddress();
       }
 
       router.push("/checkout"); // ← redirige al siguiente paso

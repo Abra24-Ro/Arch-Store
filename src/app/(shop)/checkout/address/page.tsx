@@ -13,7 +13,8 @@ export default async function AddressPage() {
 
   if (!isLoggedIn) redirect("/auth/login");
 
-  const userAddress = await getUserAddress(user!.id);
+  
+  const userAddress = await getUserAddress();
 
   return (
     <div
@@ -45,7 +46,6 @@ export default async function AddressPage() {
         {/* Formulario */}
         <AddressForm
           countries={countries}
-          userId={user!.id}
           userStoredAddress={userAddress ?? undefined}
         />
       </div>

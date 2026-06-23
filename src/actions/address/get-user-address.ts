@@ -1,11 +1,16 @@
 "use server";
 
+import { auth } from "@/src/auth";
 import { prisma } from "@/src/lib/prisma";
 import { Address } from "@/src/types";
 
-export const getUserAddress = async (
-  userId: string,
-): Promise<Partial<Address> | null> => {
+export const getUserAddress = async (): Promise<Partial<Address> | null> => {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  // Address lookup is scoped to the authenticated session user.
+  if (!userId) return null;
+
   try {
     const address = await prisma.userAddress.findUnique({
       where: { userId },
@@ -25,3 +30,6 @@ export const getUserAddress = async (
     return null;
   }
 };
+
+
+
