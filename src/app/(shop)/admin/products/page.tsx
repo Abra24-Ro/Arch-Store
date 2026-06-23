@@ -10,6 +10,7 @@ export default async function PageProductsAdmin() {
   if (!isLoggedIn) redirect("/auth/login?callbackUrl=/admin/products");
   if (user?.role !== "admin") redirect("/");
 
+  
   const { status, products } = await getAllProducts();
 
   if (status !== "success") redirect("/");

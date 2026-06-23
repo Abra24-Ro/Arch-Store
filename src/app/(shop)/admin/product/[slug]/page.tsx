@@ -16,6 +16,7 @@ export default async function ProductPage({ params }: Props) {
     getCategories(),
     isNew ? Promise.resolve(null) : getProductSlug(slug), // ← no busca si es nuevo
   ]);
+  
 
   if (!product && !isNew) redirect("/admin/products");
 

@@ -86,7 +86,7 @@ export const createOrUpdateProduct = async (data: FormData) => {
 
     revalidatePath("/admin/products");
     revalidatePath(`/admin/product/${prismaTx.slug}`);
-    revalidatePath(`/products/${prismaTx.slug}`);
+    revalidatePath(`/product/${prismaTx.slug}`);
 
     return {
       ok: true,
