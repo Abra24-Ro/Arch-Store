@@ -6,38 +6,45 @@ import { User } from "@/src/types";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 type FilterType = "all" | "admin" | "user";
 
-const ITEMS_PER_PAGE = 5;
-
 interface Props {
   users: User[];
+  currentPage: number;
+  totalPages: number;
+  selectedRole?: "admin" | "user";
+  totalCount: number;
 }
 
-export const UsersTable = ({ users }: Props) => {
-  const [filter, setFilter] = useState<FilterType>("all");
-  const [currentPage, setCurrentPage] = useState(1);
+export const UsersTable = ({
+  users,
+  currentPage,
+  totalPages,
+  selectedRole,
+  totalCount,
+}: Props) => {
+  const router = useRouter();
+
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
-  //* 1. Filtrar por rol
-  const filteredUsers = users.filter((user) => {
-    if (filter === "admin") return user.role === "admin";
-    if (filter === "user") return user.role === "user";
-    return true;
-  });
+  // El filtro activo viene de la URL/server, no de estado local.
+  // Así la tabla refleja exactamente los datos que pidió page.tsx.
+  const activeFilter: FilterType = selectedRole ?? "all";
 
-  //* 2. Paginar
-  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
-  const paginatedUsers = filteredUsers.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
-  );
-
-  //* 3. Resetear página al cambiar filtro
+  // Al cambiar filtro reiniciamos a page=1 porque el total de páginas puede cambiar.
+  // La URL queda como fuente de verdad para que Next vuelva a pedir datos al servidor.
   const handleFilter = (value: FilterType) => {
-    setFilter(value);
-    setCurrentPage(1);
+    const params = new URLSearchParams();
+
+    params.set("page", "1");
+
+    if (value !== "all") {
+      params.set("role", value);
+    }
+
+    router.push(`/admin/users?${params.toString()}`);
   };
 
   const filters: { label: string; value: FilterType }[] = [
@@ -46,7 +53,8 @@ export const UsersTable = ({ users }: Props) => {
     { label: "Usuarios", value: "user" },
   ];
 
-  //* 4. Cambiar rol de usuario
+  // Solo este estado sigue siendo local: sirve para bloquear el botón mientras
+  // cambia el rol de un usuario, sin afectar la paginación server-side.
   const onChangeUserRole = async (userId: string, role: "admin" | "user") => {
     setLoadingId(userId);
     try {
@@ -59,8 +67,22 @@ export const UsersTable = ({ users }: Props) => {
     } catch {
       toast.error("Ocurrió un error inesperado.");
     } finally {
-      setLoadingId(null); // ← siempre se ejecuta, pase lo que pase
+      setLoadingId(null);
     }
+  };
+
+  // Conservamos el filtro actual al cambiar de página.
+  // Esto permite navegar /admin/users?page=2&role=admin sin perder contexto.
+  const handlePageChange = (page: number) => {
+    const params = new URLSearchParams();
+
+    params.set("page", String(page));
+
+    if (selectedRole) {
+      params.set("role", selectedRole);
+    }
+
+    router.push(`/admin/users?${params.toString()}`);
   };
 
   return (
@@ -74,7 +96,7 @@ export const UsersTable = ({ users }: Props) => {
             whileHover={{
               borderColor: "var(--color-text-primary)",
               color:
-                filter === value
+                activeFilter === value
                   ? "var(--color-bg)"
                   : "var(--color-text-primary)",
             }}
@@ -88,13 +110,15 @@ export const UsersTable = ({ users }: Props) => {
               border: "0.5px solid",
               cursor: "pointer",
               borderColor:
-                filter === value
+                activeFilter === value
                   ? "var(--color-text-primary)"
                   : "var(--color-border)",
               background:
-                filter === value ? "var(--color-text-primary)" : "transparent",
+                activeFilter === value
+                  ? "var(--color-text-primary)"
+                  : "transparent",
               color:
-                filter === value
+                activeFilter === value
                   ? "var(--color-bg)"
                   : "var(--color-text-secondary)",
             }}
@@ -105,7 +129,7 @@ export const UsersTable = ({ users }: Props) => {
       </div>
 
       {/* Empty state */}
-      {filteredUsers.length === 0 ? (
+      {totalCount === 0 ? (
         <p
           style={{
             fontSize: "13px",
@@ -113,7 +137,7 @@ export const UsersTable = ({ users }: Props) => {
             paddingTop: "24px",
           }}
         >
-          No hay {filter === "admin" ? "administradores" : "usuarios"}.
+          No hay {activeFilter === "admin" ? "administradores" : "usuarios"}.
         </p>
       ) : (
         <>
@@ -146,7 +170,7 @@ export const UsersTable = ({ users }: Props) => {
               </thead>
 
               <tbody>
-                {paginatedUsers.map((user) => (
+                {users.map((user) => (
                   <tr
                     key={user.id}
                     style={{
@@ -258,7 +282,7 @@ export const UsersTable = ({ users }: Props) => {
             <OrderPagination
               currentPage={currentPage}
               totalPages={totalPages}
-              onPageChange={setCurrentPage}
+              onPageChange={handlePageChange}
             />
           )}
         </>
