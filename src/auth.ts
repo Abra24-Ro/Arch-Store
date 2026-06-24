@@ -14,30 +14,37 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     ...authConfig.callbacks,
 
     async jwt({ token, user }) {
-      if (user) {
-        token.data = user; // ← solo al hacer login
+      if (user?.id && user.name && user.email && user.role) {
+        token.data = {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          emailVerified: user.emailVerified ?? null,
+          role: user.role,
+          lastName: user.lastName,
+          image: user.image,
+        };
       }
+
       return token;
     },
 
     async session({ session, token }) {
       if (!token.data) return session;
 
-      // ← leer rol fresco de DB en cada request
       const dbUser = await prisma.user.findUnique({
-        where: { id: (token.data as any).id },
+        where: { id: token.data.id },
         select: { role: true },
       });
 
       session.user = {
-        ...(token.data as any),
-        role: dbUser?.role ?? "user", // ← rol siempre actualizado
+        ...token.data,
+        role: dbUser?.role ?? "user",
       };
 
       return session;
     },
   },
-
   providers: [
     Credentials({
       async authorize(credentials) {

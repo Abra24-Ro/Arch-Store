@@ -1,6 +1,6 @@
 "use server";
 
-import { Product, Size } from "@/src/generated/prisma";
+import { Prisma, Product, Size } from "@/src/generated/prisma";
 import { requireAdmin } from "@/src/lib/auth-guards";
 import { prisma } from "@/src/lib/prisma";
 import { productSchema } from "@/src/schemas";
@@ -92,14 +92,19 @@ export const createOrUpdateProduct = async (data: FormData) => {
       ok: true,
       product: prismaTx,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.log("ERROR:", error);
-    if (error?.code === "P2002") {
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
       return {
         ok: false,
         message: "Ya existe un producto con ese slug.",
       };
     }
+
     return {
       ok: false,
       message: "Error al guardar el producto.",
