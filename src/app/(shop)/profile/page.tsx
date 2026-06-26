@@ -1,21 +1,66 @@
 import { auth } from "@/src/auth";
-import { Title } from "@/src/components";
-
 import { redirect } from "next/navigation";
+import {
+  getProfileDisplayName,
+  getProfileInitials,
+  getProfileRoleLabel,
+  ProfileAside,
+  ProfileHeader,
+  ProfileQuickActions,
+  profileQuickActions,
+  ProfileSummaryCard,
+} from "./ui";
 
 export default async function ProfilePage() {
   const session = await auth();
+
   if (!session?.user) {
     redirect("/");
   }
 
+  const user = session.user;
+  const fullName = getProfileDisplayName(user);
+  const initials = getProfileInitials(fullName);
+  const roleLabel = getProfileRoleLabel(user.role);
+
   return (
-    <div>
-      <Title title="Perfil" subtitle="Gestiona tu perfil y tus datos" />
-      {JSON.stringify(session.user, null, 2)}
-      <h3>
-        {`Bienvenido, ${session.user.name || session.user.email}! Aquí puedes gestionar tu perfil y tus datos personales.`}
-      </h3>
+    <div className="page-container page-section">
+      <section
+        className="animate-slide-up"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "32px",
+          maxWidth: "1120px",
+        }}
+      >
+        <ProfileHeader
+          title="Mi perfil"
+          subtitle="Gestiona tu informacion personal, revisa tus compras y manten tus accesos principales en un solo lugar."
+        />
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "24px",
+            alignItems: "start",
+          }}
+        >
+          <ProfileSummaryCard
+            fullName={fullName}
+            initials={initials}
+            email={user.email}
+            name={user.name}
+            lastName={user.lastName}
+            roleLabel={roleLabel}
+          />
+
+          <ProfileAside isAdmin={user.role === "admin"} />
+        </div>
+
+        <ProfileQuickActions actions={profileQuickActions} />
+      </section>
     </div>
   );
 }
