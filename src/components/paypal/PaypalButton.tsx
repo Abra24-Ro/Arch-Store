@@ -9,8 +9,6 @@ import {
 import type {
   OnApproveDataOneTimePayments,
   OnCancelDataOneTimePayments,
-  OnErrorData,
-  OnCompleteData,
 } from "@paypal/react-paypal-js/sdk-v6";
 import { toast } from "sonner";
 
@@ -125,13 +123,10 @@ export const PaypalButton = ({ orderId, amount }: Props) => {
     onCancel: (_data: OnCancelDataOneTimePayments) => {
       toast.info("Pago cancelado.");
     },
-    onError: (data: OnErrorData) => {
+    onError: () => {
       toast.error("Ocurrió un error con el pago.");
-      console.error("PayPal error:", data);
     },
-    onComplete: (data: OnCompleteData) => {
-      console.log("Flujo completado:", data);
-    },
+    onComplete: () => {},
   };
 
   return (

@@ -26,10 +26,10 @@ export const getUserAddress = async (): Promise<Partial<Address> | null> => {
       address2: address2 ?? "",
     };
   } catch (error) {
-    console.error("Error getting user address:", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Error getting user address:", error);
+    }
+
     return null;
   }
 };
-
-
-

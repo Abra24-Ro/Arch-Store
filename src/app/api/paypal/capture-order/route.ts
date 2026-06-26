@@ -53,11 +53,6 @@ export async function POST(req: NextRequest) {
 
     const captureData = await resp.json();
 
-    console.log(
-      "PayPal capture response:",
-      JSON.stringify(captureData, null, 2),
-    );
-
     // 4. Verificar que el pago fue exitoso
     if (captureData.status !== "COMPLETED") {
       return NextResponse.json(
@@ -93,7 +88,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error capturing PayPal order:", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Error capturing PayPal order:", error);
+    }
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }

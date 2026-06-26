@@ -30,7 +30,10 @@ export const setUserAddress = async (address: Address) => {
       address: newAddress,
     };
   } catch (error) {
-    console.error("Error setting user address:", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Error setting user address:", error);
+    }
+
     return { success: false, message: "Failed to set user address." };
   }
 };
@@ -67,7 +70,10 @@ const createOrReplaceUserAddress = async (address: Address, userId: string) => {
     });
     return updateAddress;
   } catch (error) {
-    console.error("Error creating/replacing user address:", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Error creating/replacing user address:", error);
+    }
+
     throw new Error("Failed to create/replace user address.");
   }
 };
