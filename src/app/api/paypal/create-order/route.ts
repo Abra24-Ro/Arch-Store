@@ -84,7 +84,9 @@ export async function POST(req: NextRequest) {
     // 5. Retornar el orderId de PayPal al cliente
     return NextResponse.json({ orderId: paypalOrder.id });
   } catch (error) {
-    console.error("Error creating PayPal order:", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Error creating PayPal order:", error);
+    }
     return NextResponse.json({ error: "Error interno" }, { status: 500 });
   }
 }

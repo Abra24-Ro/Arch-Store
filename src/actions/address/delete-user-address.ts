@@ -17,12 +17,10 @@ export const deleteUserAddress = async () => {
     });
     return { success: true };
   } catch (error) {
-    console.error("Error deleting user address:", error);
+    if (process.env.NODE_ENV !== "production") {
+      console.error("Error deleting user address:", error);
+    }
+
     return { success: false, message: "Failed to delete user address." };
   }
 };
-
-
-
-
-

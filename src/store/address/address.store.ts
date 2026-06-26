@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 interface State {
   address: {
@@ -33,6 +33,10 @@ export const useAddressStore = create<State>()(
       },
       setAddress: (address) => set({ address }),
     }),
-    { name: "address-storage" },
+    //* La dirección es PII; sessionStorage evita conservarla después de cerrar la pestaña.
+    {
+      name: "address-storage",
+      storage: createJSONStorage(() => sessionStorage),
+    },
   ),
 );

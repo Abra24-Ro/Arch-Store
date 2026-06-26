@@ -68,7 +68,7 @@ export const AddressForm = ({
     setIsSubmitting(true);
 
     const { saveAddress, ...restAddress } = data;
-
+    //* Guardamos una copia temporal para conservar el checkout si el usuario recarga la pestaña.
     setAddress(restAddress);
 
     try {
