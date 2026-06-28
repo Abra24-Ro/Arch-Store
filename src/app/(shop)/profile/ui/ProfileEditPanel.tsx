@@ -16,6 +16,8 @@ export const ProfileEditPanel = ({ name, lastName }: Props) => {
       <button
         type="button"
         className="btn btn-secondary"
+        aria-expanded={isEditing}
+        aria-controls="profile-edit-form"
         onClick={() => setIsEditing(true)}
         style={{ alignSelf: "flex-start" }}
       >
@@ -26,6 +28,7 @@ export const ProfileEditPanel = ({ name, lastName }: Props) => {
 
   return (
     <div
+      id="profile-edit-form"
       style={{
         display: "flex",
         flexDirection: "column",

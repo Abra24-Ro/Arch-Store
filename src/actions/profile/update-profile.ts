@@ -2,7 +2,8 @@
 
 import { auth } from "@/src/auth";
 import { prisma } from "@/src/lib/prisma";
-import { updateProfileSchema } from "@/src/schemas";
+import { updateProfileSchema } from "@/src/schemas/profile.schema";
+
 import { revalidatePath } from "next/cache";
 
 export const updateProfile = async (data: unknown) => {

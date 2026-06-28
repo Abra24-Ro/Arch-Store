@@ -1,7 +1,8 @@
 "use client";
 
 import { updateProfile } from "@/src/actions";
-import { UpdateProfileSchema, updateProfileSchema } from "@/src/schemas";
+import { updateProfileSchema } from "@/src/schemas/profile.schema";
+import type { UpdateProfileSchema } from "@/src/schemas/profile.schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
