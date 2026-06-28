@@ -1,3 +1,4 @@
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import type { ProfileQuickAction } from "./profile-quick-actions";
 
@@ -24,9 +25,11 @@ export const ProfileQuickActions = ({ actions }: Props) => {
             className="card card-hover"
             style={{
               padding: "18px",
-              display: "flex",
-              alignItems: "flex-start",
+              display: "grid",
+              gridTemplateColumns: "34px 1fr auto",
+              alignItems: "center",
               gap: "14px",
+              cursor: "pointer",
             }}
           >
             <span
@@ -72,6 +75,14 @@ export const ProfileQuickActions = ({ actions }: Props) => {
                 {action.description}
               </span>
             </span>
+
+            <ArrowRight
+              size={14}
+              strokeWidth={1.5}
+              style={{
+                color: "var(--color-text-tertiary)",
+              }}
+            />
           </Link>
         );
       })}

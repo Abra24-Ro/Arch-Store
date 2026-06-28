@@ -1,3 +1,4 @@
+import { ProfileEditPanel } from "./ProfileEditPanel";
 interface Props {
   fullName: string;
   initials: string;
@@ -87,11 +88,14 @@ export const ProfileSummaryCard = ({
           gap: "16px",
         }}
       >
-        <ProfileField label="Nombre" value={name} />
-        <ProfileField label="Apellido" value={lastName} />
         <ProfileField label="Correo" value={email} />
         <ProfileField label="Rol" value={roleLabel} />
+        <ProfileField label="Estado" value="Cuenta activa" />
       </div>
+
+      <div className="divider" />
+
+      <ProfileEditPanel name={name} lastName={lastName} />
     </article>
   );
 };
@@ -106,7 +110,9 @@ const ProfileField = ({ label, value }: ProfileFieldProps) => (
     <span className="text-label">{label}</span>
     <span
       style={{
-        color: value ? "var(--color-text-primary)" : "var(--color-text-tertiary)",
+        color: value
+          ? "var(--color-text-primary)"
+          : "var(--color-text-tertiary)",
         fontSize: "var(--text-sm)",
         overflow: "hidden",
         textOverflow: "ellipsis",

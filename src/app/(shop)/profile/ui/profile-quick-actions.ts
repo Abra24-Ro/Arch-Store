@@ -18,13 +18,13 @@ export const profileQuickActions: ProfileQuickAction[] = [
   {
     href: "/favorites",
     label: "Lista de deseos",
-    description: "Vuelve rapido a tus productos guardados.",
+   description: "Vuelve rápido a tus productos guardados.",
     icon: Heart,
   },
   {
     href: "/checkout/address",
-    label: "Direccion de envio",
-    description: "Revisa o actualiza tu direccion principal.",
+    label: "Dirección de envío",
+   description: "Revisa o actualiza tu dirección principal.",
     icon: MapPin,
   },
 ];

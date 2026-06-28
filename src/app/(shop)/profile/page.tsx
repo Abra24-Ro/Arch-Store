@@ -36,7 +36,7 @@ export default async function ProfilePage() {
       >
         <ProfileHeader
           title="Mi perfil"
-          subtitle="Gestiona tu informacion personal, revisa tus compras y manten tus accesos principales en un solo lugar."
+          subtitle="Gestiona tu información personal, revisa tus compras y mantén tus accesos principales en un solo lugar."
         />
 
         <div

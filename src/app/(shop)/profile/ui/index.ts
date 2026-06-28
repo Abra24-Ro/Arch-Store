@@ -4,3 +4,5 @@ export * from "./ProfileQuickActions"
 export * from "./ProfileSummaryCard"
 export * from "./profile.helpers"
 export * from "./profile-quick-actions"
+export * from "./EditProfileForm"
+export * from "./ProfileEditPanel";
