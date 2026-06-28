@@ -37,3 +37,6 @@ export * from "./category/get-categories";
 export * from "./products/create-update-product";
 //*./products/delete-product-image
 export * from "./products/delete-product-image"
+
+//*profile
+export * from "./profile/update-profile"
